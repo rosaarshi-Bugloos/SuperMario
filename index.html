@@ -681,7 +681,8 @@
   function freshPlayer(){
     return { x: 40, y: GROUND_TOP - 56, w: 40, h: 56, vx: 0, vy: 0,
              onGround: false, big: false, facing: 1, invuln: 0, walk: 0,
-             animState: 'idle', walkFrame: 0, lastOnGround: true, landSquash: 0, lastVy: 0 };
+             animState: 'idle', walkFrame: 0, lastOnGround: true, landSquash: 0, lastVy: 0,
+             coyoteCounter: 0 };
   }
 
   function resetWorldState(){
@@ -850,29 +851,31 @@
 
   // ---- update -----------------------------------------------------------
   function moveAndCollide(){
-    // horizontal
+    player.vy = Math.min(player.vy + GRAVITY, MAX_FALL);
+
+    // Horizontal movement with collision
     player.x += player.vx;
     player.x = Math.max(0, Math.min(player.x, WORLD_W - player.w));
     for (var i = 0; i < solids.length; i++){
       var s = solids[i];
       if (rectsOverlap(player, s)){
-        if (player.vx > 0) player.x = s.x - player.w;
-        else if (player.vx < 0) player.x = s.x + s.w;
+        if (player.vx > 0) player.x = s.x - player.w - 1;
+        else if (player.vx < 0) player.x = s.x + s.w + 1;
       }
     }
-    // vertical
-    player.vy = Math.min(player.vy + GRAVITY, MAX_FALL);
+
+    // Vertical movement with collision
     player.y += player.vy;
     player.onGround = false;
     for (var j = 0; j < solids.length; j++){
       var s2 = solids[j];
       if (rectsOverlap(player, s2)){
         if (player.vy > 0){
-          player.y = s2.y - player.h;
+          player.y = s2.y - player.h - 1;
           player.vy = 0;
           player.onGround = true;
         } else if (player.vy < 0){
-          player.y = s2.y + s2.h;
+          player.y = s2.y + s2.h + 1;
           player.vy = 0;
           if (s2.bonus && !s2.hit) bumpBlock(s2);
         }
@@ -940,8 +943,9 @@
     else if (keys.right && !keys.left){ player.vx = MOVE_SPEED; player.facing = 1; }
     else player.vx = 0;
 
+    player.coyoteCounter = player.onGround ? 6 : Math.max(0, player.coyoteCounter - 1);
     if (jumpQueued){
-      if (player.onGround){ player.vy = JUMP_V; player.onGround = false; soundJump(); }
+      if (player.coyoteCounter > 0){ player.vy = JUMP_V; player.coyoteCounter = 0; soundJump(); }
       jumpQueued = false;
     }
 
