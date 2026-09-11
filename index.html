@@ -368,7 +368,8 @@
 
   function freshPlayer(){
     return { x: 40, y: GROUND_TOP - 40, w: 30, h: 40, vx: 0, vy: 0,
-             onGround: false, big: false, facing: 1, invuln: 0, walk: 0 };
+             onGround: false, big: false, facing: 1, invuln: 0, walk: 0,
+             animState: 'idle', walkFrame: 0, lastOnGround: true, landSquash: 0, lastVy: 0 };
   }
 
   function resetWorldState(){
@@ -610,12 +611,47 @@
     if (player.invuln > 0) player.invuln -= 1;
     if (player.vx !== 0) player.walk += 1;
 
+    updatePlayerAnimation();
+
     if (player.y > PIT_Y){ loseLife(); if (gameState !== 'playing') return; }
 
     if (player.x + player.w >= FLAG_X){ win(); }
 
     camera.x = Math.max(0, Math.min(player.x + player.w/2 - CANVAS_W/2, WORLD_W - CANVAS_W));
     syncHud();
+  }
+
+  // ---- animation -------------------------------------------------------
+  function updatePlayerAnimation(){
+    var wasOnGround = player.lastOnGround;
+    player.lastOnGround = player.onGround;
+
+    // Detect landing - transition from air to ground
+    if (player.onGround && !wasOnGround && Math.abs(player.lastVy) > 5){
+      player.landSquash = 8;
+    }
+
+    // Decay landing squash
+    if (player.landSquash > 0) player.landSquash -= 1;
+
+    // Update animation state
+    if (!player.onGround){
+      if (player.vy < -2) player.animState = 'jump';
+      else if (player.vy > 4) player.animState = 'fall';
+      else player.animState = 'fall';
+    } else {
+      if (Math.abs(player.vx) > 0.5) player.animState = 'walk';
+      else player.animState = 'idle';
+    }
+
+    // Update walk frame for walk cycle
+    if (player.animState === 'walk'){
+      player.walkFrame = Math.floor(player.walk / 8) % 4;
+    } else {
+      player.walkFrame = 0;
+    }
+
+    player.lastVy = player.vy;
   }
 
   // ---- drawing ------------------------------------------------------
@@ -792,9 +828,46 @@
     var flash = player.invuln > 0 && Math.floor(player.invuln / 6) % 2 === 0;
     if (flash) ctx.globalAlpha = 0.4;
 
-    var bob = (player.onGround && player.vx !== 0) ? Math.sin(player.walk * 0.35) * 2 : 0;
     var sprite = player.big ? SPR.playerBig : SPR.playerSmall;
-    drawSprite(sprite, x, y + bob, w, h, player.facing < 0);
+    var offsetY = 0, scaleX = 1, scaleY = 1, offsetX = 0;
+
+    // Walk cycle animation - creates 4-frame bobbing pattern
+    if (player.animState === 'walk'){
+      var frameOffsets = [2, -1, 0, -1];
+      offsetY = frameOffsets[player.walkFrame];
+    }
+    // Jump animation - upward squash then stretch
+    else if (player.animState === 'jump'){
+      var jumpPhase = Math.max(0, -player.vy / JUMP_V);
+      if (jumpPhase < 0.15){
+        scaleY = 0.85;
+        scaleX = 1.15;
+        offsetY = 3;
+      } else {
+        offsetY = -Math.sin(jumpPhase * Math.PI) * 6;
+      }
+    }
+    // Fall animation - slight stretch
+    else if (player.animState === 'fall'){
+      scaleY = 1.08;
+      scaleX = 0.95;
+      offsetY = 2;
+    }
+    // Landing animation - squash and bounce
+    if (player.landSquash > 0){
+      var squashAmount = (8 - player.landSquash) / 8;
+      scaleY = Math.max(0.75, 1 - squashAmount * 0.25);
+      scaleX = Math.min(1.25, 1 + squashAmount * 0.25);
+      offsetY += squashAmount * 2;
+    }
+
+    ctx.save();
+    ctx.translate(x + w / 2, y + h / 2);
+    if (player.facing < 0) ctx.scale(-scaleX, scaleY);
+    else ctx.scale(scaleX, scaleY);
+    ctx.translate(-(x + w / 2), -(y + h / 2));
+    drawSprite(sprite, x, y + offsetY, w, h, false);
+    ctx.restore();
 
     ctx.globalAlpha = 1;
   }
