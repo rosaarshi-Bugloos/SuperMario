@@ -210,6 +210,17 @@
           <button class="restart-btn" id="restartBtn">Restart &middot; R</button>
         </div>
       </div>
+      <div class="overlay" id="menuOverlay">
+        <div class="overlay-card">
+          <p class="overlay-title">Pixel Plumber</p>
+          <p class="overlay-sub">Select Difficulty</p>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="restart-btn" id="btnEasy" style="background: #4CAF50;">Easy</button>
+            <button class="restart-btn" id="btnNormal" style="background: #FF9800;">Normal</button>
+            <button class="restart-btn" id="btnHard" style="background: #F44336;">Hard</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="readout">
       <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="statScore">0000</span></div>
@@ -480,6 +491,17 @@
     else requestAnimationFrame(function(){ waitForAtlas(cb); });
   }
 
+  // ---- difficulty system -----------------------------------------------
+  var DIFFICULTY = 'normal';
+  var CURRENT_LEVEL = 1;
+  var TOTAL_LEVELS = 3;
+
+  var DIFFICULTY_MODS = {
+    'easy': { enemySpeedMult: 0.6, lives: 5, enemyCount: 0.7 },
+    'normal': { enemySpeedMult: 1.0, lives: 3, enemyCount: 1.0 },
+    'hard': { enemySpeedMult: 1.4, lives: 2, enemyCount: 1.3 }
+  };
+
   // ---- world constants -----------------------------------------------
   var CANVAS_W = 800, CANVAS_H = 450;
   var GROUND_TOP = 380;
@@ -491,66 +513,169 @@
   var PIT_Y = 480;
   var FLAG_X = 3300;
 
-  var grounds = [
-    { x: 0,    y: GROUND_TOP, w: 560,  h: 70 },
-    { x: 680,  y: GROUND_TOP, w: 420,  h: 70 },
-    { x: 1200, y: GROUND_TOP, w: 600,  h: 70 },
-    { x: 1900, y: GROUND_TOP, w: 1500, h: 70 }
-  ];
+  var levelData = {
+    1: {
+      grounds: [
+        { x: 0,    y: GROUND_TOP, w: 560,  h: 70 },
+        { x: 680,  y: GROUND_TOP, w: 420,  h: 70 },
+        { x: 1200, y: GROUND_TOP, w: 600,  h: 70 },
+        { x: 1900, y: GROUND_TOP, w: 1500, h: 70 }
+      ],
+      platforms: [
+        { x: 260,  y: 260, w: 140, h: 24 },
+        { x: 760,  y: 230, w: 160, h: 24 },
+        { x: 1000, y: 300, w: 120, h: 24 },
+        { x: 1350, y: 250, w: 150, h: 24 },
+        { x: 2000, y: 270, w: 160, h: 24 },
+        { x: 2300, y: 210, w: 140, h: 24 },
+        { x: 2650, y: 270, w: 160, h: 24 }
+      ],
+      pipes: [
+        { x: 460,  y: GROUND_TOP - 56, w: 48, h: 56 },
+        { x: 2420, y: GROUND_TOP - 56, w: 48, h: 56 }
+      ],
+      mushrooms: [
+        { x: 310,  y: 260 - 26 },
+        { x: 850,  y: GROUND_TOP - 26 },
+        { x: 1400, y: 250 - 26 },
+        { x: 2100, y: GROUND_TOP - 26 },
+        { x: 2340, y: 210 - 26 }
+      ],
+      enemies: [
+        { x: 780,  y: GROUND_TOP - 24, min: 700,  max: 1080, speed: 1.2 },
+        { x: 1300, y: GROUND_TOP - 24, min: 1220, max: 1780, speed: 1.4 },
+        { x: 2050, y: GROUND_TOP - 24, min: 1950, max: 2280, speed: 1.3 },
+        { x: 2020, y: 270 - 24,        min: 2000, max: 2140, speed: 1.0 },
+        { x: 2700, y: GROUND_TOP - 24, min: 2600, max: 3100, speed: 1.5 }
+      ],
+      coins: [
+        { x: 590,  y: 320 }, { x: 620,  y: 296 }, { x: 650,  y: 320 },
+        { x: 1120, y: 330 }, { x: 1150, y: 300 }, { x: 1180, y: 330 },
+        { x: 3150, y: 330 }, { x: 3200, y: 306 }, { x: 3250, y: 330 }
+      ],
+      bonusBlocks: [
+        { x: 150,  y: 300, item: 'coin' },
+        { x: 900,  y: 300, item: 'mushroom' },
+        { x: 2200, y: 300, item: 'coin' }
+      ]
+    },
+    2: {
+      grounds: [
+        { x: 0,    y: GROUND_TOP, w: 400,  h: 70 },
+        { x: 550,  y: GROUND_TOP, w: 300,  h: 70 },
+        { x: 1100, y: GROUND_TOP, w: 500,  h: 70 },
+        { x: 1800, y: GROUND_TOP, w: 1600, h: 70 }
+      ],
+      platforms: [
+        { x: 200,  y: 280, w: 120, h: 24 },
+        { x: 700,  y: 250, w: 140, h: 24 },
+        { x: 950,  y: 280, w: 100, h: 24 },
+        { x: 1300, y: 220, w: 150, h: 24 },
+        { x: 1950, y: 280, w: 170, h: 24 },
+        { x: 2350, y: 180, w: 130, h: 24 },
+        { x: 2700, y: 260, w: 150, h: 24 }
+      ],
+      pipes: [
+        { x: 450,  y: GROUND_TOP - 56, w: 48, h: 56 },
+        { x: 1600, y: GROUND_TOP - 56, w: 48, h: 56 },
+        { x: 2500, y: GROUND_TOP - 56, w: 48, h: 56 }
+      ],
+      mushrooms: [
+        { x: 250,  y: 280 - 26 },
+        { x: 800,  y: GROUND_TOP - 26 },
+        { x: 1350, y: 220 - 26 },
+        { x: 2050, y: GROUND_TOP - 26 }
+      ],
+      enemies: [
+        { x: 600,  y: GROUND_TOP - 24, min: 550,  max: 900,  speed: 1.5 },
+        { x: 1200, y: GROUND_TOP - 24, min: 1100, max: 1600, speed: 1.6 },
+        { x: 1950, y: GROUND_TOP - 24, min: 1850, max: 2200, speed: 1.4 },
+        { x: 2700, y: 260 - 24,        min: 2650, max: 2900, speed: 1.2 }
+      ],
+      coins: [
+        { x: 300,  y: 320 }, { x: 330,  y: 296 }, { x: 360,  y: 320 },
+        { x: 1050, y: 330 }, { x: 1080, y: 300 }, { x: 1110, y: 330 },
+        { x: 2200, y: 330 }, { x: 2250, y: 300 }, { x: 2300, y: 330 }
+      ],
+      bonusBlocks: [
+        { x: 100,  y: 300, item: 'coin' },
+        { x: 850,  y: 300, item: 'mushroom' },
+        { x: 2150, y: 300, item: 'mushroom' }
+      ]
+    },
+    3: {
+      grounds: [
+        { x: 0,    y: GROUND_TOP, w: 350,  h: 70 },
+        { x: 500,  y: GROUND_TOP, w: 250,  h: 70 },
+        { x: 1000, y: GROUND_TOP, w: 400,  h: 70 },
+        { x: 1700, y: GROUND_TOP, w: 1700, h: 70 }
+      ],
+      platforms: [
+        { x: 150,  y: 300, w: 100, h: 24 },
+        { x: 600,  y: 240, w: 130, h: 24 },
+        { x: 900,  y: 280, w: 80,  h: 24 },
+        { x: 1250, y: 200, w: 150, h: 24 },
+        { x: 1900, y: 280, w: 160, h: 24 },
+        { x: 2350, y: 160, w: 120, h: 24 },
+        { x: 2750, y: 240, w: 140, h: 24 }
+      ],
+      pipes: [
+        { x: 400,  y: GROUND_TOP - 56, w: 48, h: 56 },
+        { x: 1400, y: GROUND_TOP - 56, w: 48, h: 56 },
+        { x: 2600, y: GROUND_TOP - 56, w: 48, h: 56 }
+      ],
+      mushrooms: [
+        { x: 200,  y: 300 - 26 },
+        { x: 700,  y: 240 - 26 },
+        { x: 1300, y: 200 - 26 },
+        { x: 2000, y: GROUND_TOP - 26 },
+        { x: 2400, y: 160 - 26 }
+      ],
+      enemies: [
+        { x: 550,  y: GROUND_TOP - 24, min: 500,  max: 750,  speed: 1.8 },
+        { x: 1100, y: GROUND_TOP - 24, min: 1000, max: 1400, speed: 1.9 },
+        { x: 1900, y: GROUND_TOP - 24, min: 1800, max: 2100, speed: 1.7 },
+        { x: 2200, y: 280 - 24,        min: 2150, max: 2350, speed: 1.5 },
+        { x: 2800, y: 240 - 24,        min: 2700, max: 2950, speed: 1.6 }
+      ],
+      coins: [
+        { x: 200,  y: 320 }, { x: 230,  y: 296 },
+        { x: 1000, y: 330 }, { x: 1030, y: 300 },
+        { x: 2100, y: 330 }, { x: 2150, y: 300 }, { x: 2200, y: 330 }
+      ],
+      bonusBlocks: [
+        { x: 50,   y: 300, item: 'mushroom' },
+        { x: 800,  y: 300, item: 'mushroom' },
+        { x: 2050, y: 300, item: 'mushroom' }
+      ]
+    }
+  };
 
-  var platforms = [
-    { x: 260,  y: 260, w: 140, h: 24 },
-    { x: 760,  y: 230, w: 160, h: 24 },
-    { x: 1000, y: 300, w: 120, h: 24 },
-    { x: 1350, y: 250, w: 150, h: 24 },
-    { x: 2000, y: 270, w: 160, h: 24 },
-    { x: 2300, y: 210, w: 140, h: 24 },
-    { x: 2650, y: 270, w: 160, h: 24 }
-  ];
-
-  var pipes = [
-    { x: 460,  y: GROUND_TOP - 56, w: 48, h: 56 },
-    { x: 2420, y: GROUND_TOP - 56, w: 48, h: 56 }
-  ];
-
-  var mushroomsInit = [
-    { x: 310,  y: 260 - 26 },
-    { x: 850,  y: GROUND_TOP - 26 },
-    { x: 1400, y: 250 - 26 },
-    { x: 2100, y: GROUND_TOP - 26 },
-    { x: 2340, y: 210 - 26 }
-  ];
-
-  var enemiesInit = [
-    { x: 780,  y: GROUND_TOP - 24, min: 700,  max: 1080, speed: 1.2 },
-    { x: 1300, y: GROUND_TOP - 24, min: 1220, max: 1780, speed: 1.4 },
-    { x: 2050, y: GROUND_TOP - 24, min: 1950, max: 2280, speed: 1.3 },
-    { x: 2020, y: 270 - 24,        min: 2000, max: 2140, speed: 1.0 },
-    { x: 2700, y: GROUND_TOP - 24, min: 2600, max: 3100, speed: 1.5 }
-  ];
-
-  var bonusBlocksInit = [
-    { x: 150,  y: 300, item: 'coin' },
-    { x: 900,  y: 300, item: 'mushroom' },
-    { x: 2200, y: 300, item: 'coin' }
-  ];
-
-  var coinsInit = [
-    { x: 590,  y: 320 }, { x: 620,  y: 296 }, { x: 650,  y: 320 },
-    { x: 1120, y: 330 }, { x: 1150, y: 300 }, { x: 1180, y: 330 },
-    { x: 3150, y: 330 }, { x: 3200, y: 306 }, { x: 3250, y: 330 }
-  ];
+  var grounds, platforms, pipes, mushroomsInit, enemiesInit, coinsInit, bonusBlocksInit;
 
   // ---- mutable state ----------------------------------------------------
   var player, mushrooms, enemies, coins, bonusBlocks, coinsCollected;
-  var camera, score, lives, gameState;
-  var solids = grounds.concat(platforms, pipes);
+  var camera, score, lives, gameState, solids;
   var keys = { left:false, right:false };
   var jumpQueued = false;
 
   function rectsOverlap(a, b){
     return a.x < b.x + b.w && a.x + a.w > b.x &&
            a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function loadLevel(levelNum){
+    var levelInfo = levelData[levelNum] || levelData[1];
+    grounds = levelInfo.grounds;
+    platforms = levelInfo.platforms;
+    pipes = levelInfo.pipes;
+    mushroomsInit = levelInfo.mushrooms;
+    coinsInit = levelInfo.coins;
+    bonusBlocksInit = levelInfo.bonusBlocks;
+    enemiesInit = levelInfo.enemies;
+    var mod = DIFFICULTY_MODS[DIFFICULTY];
+    enemiesInit = enemiesInit.filter(function(e, idx){ return Math.random() < mod.enemyCount; })
+      .map(function(e){ return { x: e.x, y: e.y, min: e.min, max: e.max, speed: e.speed * mod.enemySpeedMult }; });
   }
 
   function freshPlayer(){
@@ -581,10 +706,13 @@
 
   function resetRun(){
     score = 0;
-    lives = 3;
+    var mod = DIFFICULTY_MODS[DIFFICULTY];
+    lives = mod.lives;
+    loadLevel(CURRENT_LEVEL);
     gameState = 'playing';
     resetWorldState();
     hideOverlay();
+    updateHud();
   }
 
   function loseLife(){
@@ -602,7 +730,12 @@
   function win(){
     gameState = 'win';
     soundVictory();
-    showOverlay('Level Clear!', 'Score ' + score);
+    if (CURRENT_LEVEL >= TOTAL_LEVELS){
+      showOverlay('Game Complete!', 'Final Score ' + score);
+    } else {
+      CURRENT_LEVEL += 1;
+      setTimeout(function(){ resetRun(); }, 2000);
+    }
   }
 
   function growPlayer(){
@@ -658,11 +791,19 @@
   var statCoins = document.getElementById('statCoins');
   var statLives = document.getElementById('statLives');
   var statSize = document.getElementById('statSize');
+  var statWorld = document.getElementById('statWorld');
+
   function syncHud(){
     statScore.textContent = String(score).padStart(4, '0');
     statCoins.textContent = String(coinsCollected).padStart(2, '0');
     statLives.textContent = String(lives);
     statSize.textContent = player.big ? 'Big' : 'Small';
+    var diffShort = DIFFICULTY.charAt(0).toUpperCase();
+    statWorld.textContent = diffShort + '-' + CURRENT_LEVEL;
+  }
+
+  function updateHud(){
+    syncHud();
   }
 
   // ---- input ----------------------------------------------------------
@@ -695,6 +836,17 @@
     e.preventDefault(); jumpQueued = true;
   });
   document.getElementById('restartBtn').addEventListener('click', resetRun);
+
+  function startGameWithDifficulty(difficulty){
+    DIFFICULTY = difficulty;
+    CURRENT_LEVEL = 1;
+    document.getElementById('menuOverlay').hidden = true;
+    resetRun();
+  }
+
+  document.getElementById('btnEasy').addEventListener('click', function(){ startGameWithDifficulty('easy'); });
+  document.getElementById('btnNormal').addEventListener('click', function(){ startGameWithDifficulty('normal'); });
+  document.getElementById('btnHard').addEventListener('click', function(){ startGameWithDifficulty('hard'); });
 
   // ---- update -----------------------------------------------------------
   function moveAndCollide(){
