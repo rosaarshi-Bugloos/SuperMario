@@ -1,1025 +1,280 @@
-<title>Pixel Plumber</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<title>Pixel Plumber - Retro Arcade</title>
 <style>
-  :root{
-    --bg: #E9EEF0;
-    --surface: #FFFFFF;
-    --bezel: #16232B;
-    --ink: #16232B;
-    --muted: #5A6C73;
-    --accent: #E8622C;
-    --accent-ink: #FFFFFF;
-    --accent-2: #2E8B7A;
-    --line: rgba(22,35,43,0.14);
-    --key-bg: #F1F0EA;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg: #0F1A20;
-      --surface: #152229;
-      --bezel: #0A1216;
-      --ink: #E7EEF0;
-      --muted: #93A6AC;
-      --accent: #FF7A45;
-      --accent-ink: #191008;
-      --accent-2: #45C7A8;
-      --line: rgba(231,238,240,0.14);
-      --key-bg: #1D2B32;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg: #0F1A20;
-    --surface: #152229;
-    --bezel: #0A1216;
-    --ink: #E7EEF0;
-    --muted: #93A6AC;
-    --accent: #FF7A45;
-    --accent-ink: #191008;
-    --accent-2: #45C7A8;
-    --line: rgba(231,238,240,0.14);
-    --key-bg: #1D2B32;
-  }
-
   *{ box-sizing:border-box; }
   body{
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-    margin:0;
-    padding: 32px 16px 56px;
-    display:flex;
-    justify-content:center;
-  }
-  .wrap{ width:100%; max-width: 880px; display:flex; flex-direction:column; gap:22px; }
-
-  .head{ display:flex; flex-direction:column; gap:6px; }
-  .eyebrow{
-    font-family:'JetBrains Mono', ui-monospace, monospace;
-    font-size:12px; letter-spacing:.12em; text-transform:uppercase;
-    color: var(--accent); margin:0;
-  }
-  h1{
-    font-family:'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    font-weight:800; font-size: clamp(30px,5vw,42px);
-    margin:0; text-wrap:balance; line-height:1.05;
-  }
-  .dek{ margin:0; color: var(--muted); max-width:60ch; font-size:15px; line-height:1.55; }
-
-  .screen-frame{
-    background: var(--bezel);
-    border-radius:18px;
-    padding:14px;
-    box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px rgba(0,0,0,0.55);
-  }
-  .stage{
-    position:relative;
-    width:100%;
-    aspect-ratio: 800 / 450;
-    border-radius:10px;
-    overflow:hidden;
-    background:#000;
-  }
-  .stage canvas{
-    display:block;
-    width:100%;
-    height:100%;
+    background: linear-gradient(to bottom, #FF006E, #FB5607, #FFBE0B);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Arial Black', sans-serif;
   }
 
-  .touch-controls{
-    position:absolute;
-    left:0; right:0; bottom:0;
-    display:flex; justify-content:space-between; align-items:flex-end;
-    padding:10px;
-    pointer-events:none;
-  }
-  .tbtn{
-    pointer-events:auto;
-    width:56px; height:56px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.25);
-    background: rgba(20,20,24,0.45);
-    color:#fff;
-    font-size:20px;
-    backdrop-filter: blur(2px);
-    touch-action:none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .tbtn:active{ background: rgba(255,255,255,0.25); }
-  #btnJump{ margin-left:auto; }
-
-  .overlay{
-    position:absolute; inset:0;
-    background: rgba(10,14,16,0.72);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .overlay[hidden]{ display:none; }
-  .overlay-card{ text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center; }
-  .overlay-title{
-    font-family:'Baloo 2', sans-serif; font-weight:800;
-    color:#fff; font-size: clamp(26px,5vw,34px); margin:0;
-  }
-  .overlay-sub{
-    font-family:'JetBrains Mono', monospace; color:#dfe7e9; margin:0; font-size:14px;
-  }
-  .restart-btn{
-    font-family:'JetBrains Mono', monospace; font-size:13px; letter-spacing:.04em;
-    background: var(--accent); color: var(--accent-ink);
-    border:none; border-radius:999px; padding:10px 20px; cursor:pointer;
-  }
-  .restart-btn:focus-visible, .tbtn:focus-visible, .key-btn:focus-visible{
-    outline: 2px solid var(--accent); outline-offset:2px;
+  .title-screen{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
   }
 
-  .readout{
-    margin-top:12px;
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-    gap:1px;
-    background: var(--line);
-    border-radius:10px;
-    overflow:hidden;
-  }
-  .stat{
-    background: var(--surface);
-    padding:10px 14px;
-    display:flex; flex-direction:column; gap:2px;
-  }
-  .stat-label{
-    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.1em;
-    text-transform:uppercase; color: var(--muted);
-  }
-  .stat-value{
-    font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:600;
-    font-variant-numeric: tabular-nums;
+  .title-box{
+    background: rgba(0,0,0,0.3);
+    padding: 20px;
+    border-radius: 4px;
+    border: 4px solid #000;
   }
 
-  .notes{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:16px;
+  .title-box h1{
+    font-size: 64px;
+    margin: 0;
+    color: #FFFF00;
+    text-shadow: 4px 4px 0px #FF006E, -2px -2px 0px #000;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+    font-weight: bold;
   }
-  .panel{
-    background: var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:16px 18px;
+
+  .start-text{
+    background: #000;
+    color: #FFFF00;
+    padding: 12px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    border: 2px solid #FFFF00;
+    box-shadow: 0 4px 0px #FF006E;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
   }
-  .panel h2{
-    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:16px;
-    margin:0 0 10px;
+
+  .start-text:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #FF006E;
   }
-  .legend{ border-collapse:collapse; width:100%; }
-  .legend td{ padding:5px 0; font-size:13.5px; vertical-align:middle; }
-  .legend td.key{ padding-right:12px; white-space:nowrap; }
-  .key-tag{
-    font-family:'JetBrains Mono', monospace; font-size:11.5px;
-    background: var(--key-bg); border:1px solid var(--line);
-    border-radius:6px; padding:3px 7px;
+
+  .start-text:active{
+    transform: translateY(2px);
+    box-shadow: 0 2px 0px #FF006E;
   }
-  .hint{ margin:10px 0 0; font-size:12.5px; color: var(--muted); }
-  .about-panel p{ margin:0; font-size:13.5px; line-height:1.6; color: var(--ink); }
-  .credit{
-    margin:0; font-size:12px; color: var(--muted); text-align:center;
+
+  .button-group{
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .credit a{ color: var(--muted); }
+
+  .btn{
+    background: #FF006E;
+    color: #FFF;
+    padding: 12px 20px;
+    border-radius: 2px;
+    font-size: 13px;
+    font-weight: bold;
+    box-shadow: 0 3px 0px #C1003D;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Arial Black', sans-serif;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn:nth-child(2){
+    background: #FB5607;
+    box-shadow: 0 3px 0px #C23B05;
+  }
+
+  .btn:nth-child(2):active, .btn:nth-child(2):hover{
+    box-shadow: 0 3px 0px #C23B05;
+  }
+
+  .btn:hover, .btn:active{
+    transform: translateY(2px);
+    box-shadow: 0 1px 0px #C1003D;
+  }
+
+  .btn:nth-child(2):hover, .btn:nth-child(2):active{
+    box-shadow: 0 1px 0px #C23B05;
+  }
+
+  .copyright{
+    font-size: 11px;
+    color: #000;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  #guideModal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #guideModal.show{
+    display: flex;
+  }
+
+  .modal-content{
+    background: linear-gradient(to bottom, #FF006E, #FB5607);
+    padding: 24px;
+    border-radius: 4px;
+    max-width: 480px;
+    margin: 20px;
+    border: 4px solid #000;
+    box-shadow: 0 8px 0px rgba(0,0,0,0.5);
+  }
+
+  .modal-content h2{
+    margin-top: 0;
+    color: #FFFF00;
+    text-shadow: 2px 2px 0px #000;
+    font-size: 28px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .modal-content table{
+    width: 100%;
+    border-collapse: collapse;
+    background: #000;
+    border: 2px solid #FFFF00;
+  }
+
+  .modal-content tr{
+    border-bottom: 1px solid #FFFF00;
+  }
+
+  .modal-content td{
+    padding: 8px;
+    text-align: left;
+    color: #FFFF00;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+  }
+
+  .modal-content td:first-child{
+    font-weight: bold;
+    width: 40%;
+  }
+
+  .close-btn{
+    margin-top: 16px;
+    background: #FFFF00;
+    color: #000;
+    border: 2px solid #000;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0px #000;
+  }
+
+  .close-btn:active{
+    transform: translateY(2px);
+  }
 
   @media (max-width: 640px){
-    .notes{ grid-template-columns: 1fr; }
+    .title-box h1{
+      font-size: 48px;
+    }
+    .button-group{
+      flex-direction: column;
+      width: 100%;
+    }
+    .btn{
+      width: 100%;
+    }
+    .start-text{
+      width: 100%;
+    }
   }
 </style>
 
-<div class="wrap">
-  <header class="head">
-    <p class="eyebrow">Project log &middot; build v0.3</p>
-    <h1>Pixel Plumber</h1>
-    <p class="dek">A tiny side-scrolling platformer, built from scratch and drawn with real CC0 sprites: run, jump, grow big on power mushrooms, stomp the drones, and reach the flag.</p>
-  </header>
-
-  <div class="screen-frame">
-    <div class="stage" id="stage">
-      <canvas id="game" width="800" height="450"></canvas>
-      <div class="touch-controls" id="touchControls">
-        <button class="tbtn" id="btnLeft" aria-label="Move left">&#9664;</button>
-        <button class="tbtn" id="btnRight" aria-label="Move right">&#9654;</button>
-        <button class="tbtn" id="btnJump" aria-label="Jump">&#8963;</button>
-      </div>
-      <div class="overlay" id="overlay" hidden>
-        <div class="overlay-card">
-          <p class="overlay-title" id="overlayTitle">Game Over</p>
-          <p class="overlay-sub" id="overlaySub">Score 0</p>
-          <button class="restart-btn" id="restartBtn">Restart &middot; R</button>
-        </div>
-      </div>
-    </div>
-    <div class="readout">
-      <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="statScore">0000</span></div>
-      <div class="stat"><span class="stat-label">Coins</span><span class="stat-value" id="statCoins">00</span></div>
-      <div class="stat"><span class="stat-label">Lives</span><span class="stat-value" id="statLives">3</span></div>
-      <div class="stat"><span class="stat-label">Size</span><span class="stat-value" id="statSize">Small</span></div>
-      <div class="stat"><span class="stat-label">World</span><span class="stat-value" id="statWorld">1-1</span></div>
-    </div>
+<body>
+<div class="title-screen">
+  <div class="title-box">
+    <h1>PIXEL PLUMBER</h1>
   </div>
 
-  <div class="notes">
-    <div class="panel controls-panel">
-      <h2>Controls</h2>
-      <table class="legend">
-        <tr><td class="key"><span class="key-tag">&larr; &rarr;</span> <span class="key-tag">A D</span></td><td>Move</td></tr>
-        <tr><td class="key"><span class="key-tag">Space</span> <span class="key-tag">&uarr; W</span></td><td>Jump</td></tr>
-        <tr><td class="key"><span class="key-tag">R</span></td><td>Restart</td></tr>
-      </table>
-      <p class="hint">On touch, use the on-screen arrows in the bottom corners of the screen.</p>
-    </div>
-    <div class="panel about-panel">
-      <h2>How it works</h2>
-      <p>Touch a mushroom to grow big, which buys you one extra hit before you shrink back down. Bump a gold block from underneath to pop out a coin or a mushroom. Jump on a drone from above to squash it for points; touching one from the side costs a life. Falling in a pit sends you back to the start of the run. Reach the flag to clear the level.</p>
-    </div>
+  <div class="start-text" onclick="document.location='game.html'">
+    ▶ PRESS START ◀
   </div>
 
-  <p class="credit">Sprites: <a href="https://kenney.nl/assets/pixel-platformer" target="_blank" rel="noopener">Kenney &ndash; Pixel Platformer</a>, CC0 1.0.</p>
+  <div class="button-group">
+    <a href="game.html" class="btn">1P START</a>
+    <button class="btn" onclick="showGuide()">SETTINGS</button>
+  </div>
+
+  <p class="copyright">© 1985 RETRO GAMES INC.</p>
+</div>
+
+<div id="guideModal">
+  <div class="modal-content">
+    <h2>HOW TO PLAY</h2>
+    <table>
+      <tr>
+        <td>MOVE</td>
+        <td>← → / A D</td>
+      </tr>
+      <tr>
+        <td>JUMP</td>
+        <td>SPACE / ↑ / W</td>
+      </tr>
+      <tr>
+        <td>RESTART</td>
+        <td>R KEY</td>
+      </tr>
+      <tr>
+        <td>MUSHROOM</td>
+        <td>GROW BIG</td>
+      </tr>
+      <tr>
+        <td>COINS</td>
+        <td>+POINTS</td>
+      </tr>
+      <tr>
+        <td>ENEMIES</td>
+        <td>JUMP ON</td>
+      </tr>
+      <tr>
+        <td>FLAG</td>
+        <td>WIN!</td>
+      </tr>
+    </table>
+    <button class="close-btn" onclick="hideGuide()">CLOSE</button>
+  </div>
 </div>
 
 <script>
-(function(){
-  "use strict";
-
-  var canvas = document.getElementById('game');
-  var ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-
-  // ---- sprite atlas ------------------------------------------------
-  // Generate character sprite sheet with animation frames
-  function generateCharacterSprites(){
-    var c = document.createElement('canvas');
-    var ctx = c.getContext('2d');
-    c.width = 600;
-    c.height = 200;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, c.width, c.height);
-
-    // Environment sprites (preserved)
-    ctx.fillStyle = '#8B7355';
-    ctx.fillRect(0, 0, 18, 18);
-    ctx.fillStyle = '#A0826D';
-    ctx.fillRect(18, 0, 18, 18);
-    for (var b = 0; b < 4; b++){
-      ctx.fillStyle = ['#CD853F', '#D2691E', '#BC8F8F', '#8B4513'][b];
-      ctx.fillRect(36 + b*18, 0, 18, 18);
-    }
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(108, 0, 18, 18);
-    ctx.fillStyle = '#D4AF37';
-    ctx.fillRect(126, 0, 18, 18);
-    ctx.fillStyle = '#DC143C';
-    ctx.fillRect(144, 0, 18, 18);
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(162, 0, 18, 18);
-    ctx.fillStyle = '#2F4F4F';
-    ctx.fillRect(180, 0, 18, 18);
-    ctx.fillStyle = '#DC143C';
-    ctx.fillRect(198, 0, 18, 18);
-
-    // Placeholder old sprites
-    ctx.fillStyle = '#8B0000';
-    ctx.fillRect(0, 18, 24, 24);
-    ctx.fillStyle = '#00008B';
-    ctx.fillRect(24, 18, 24, 24);
-    ctx.fillStyle = '#228B22';
-    ctx.fillRect(48, 18, 24, 24);
-
-    // Small character frames (40x56)
-    drawCharFrame(ctx, 220, 0, 40, 56, 'idle', false);
-    drawCharFrame(ctx, 265, 0, 40, 56, 'walk1', false);
-    drawCharFrame(ctx, 310, 0, 40, 56, 'walk2', false);
-    drawCharFrame(ctx, 355, 0, 40, 56, 'walk3', false);
-    drawCharFrame(ctx, 400, 0, 40, 56, 'walk4', false);
-    drawCharFrame(ctx, 445, 0, 40, 56, 'jump', false);
-    drawCharFrame(ctx, 490, 0, 40, 56, 'fall', false);
-    drawCharFrame(ctx, 535, 0, 40, 56, 'land', false);
-
-    // Big character frames (50x70)
-    drawCharFrame(ctx, 220, 65, 50, 70, 'idle', true);
-    drawCharFrame(ctx, 275, 65, 50, 70, 'walk1', true);
-    drawCharFrame(ctx, 330, 65, 50, 70, 'walk2', true);
-    drawCharFrame(ctx, 385, 65, 50, 70, 'walk3', true);
-    drawCharFrame(ctx, 440, 65, 50, 70, 'walk4', true);
-    drawCharFrame(ctx, 495, 65, 50, 70, 'jump', true);
-    drawCharFrame(ctx, 550, 65, 50, 70, 'fall', true);
-    drawCharFrame(ctx, 560, 65, 50, 70, 'land', true);
-
-    return c.toDataURL();
-  }
-
-  function drawCharFrame(ctx, x, y, w, h, action, isBig){
-    var baseScale = isBig ? 1.3 : 1;
-    var cw = w / baseScale;
-    var ch = h / baseScale;
-    var ox = x + (w - cw) / 2;
-    var oy = y + (h - ch) / 2;
-
-    ctx.fillStyle = '#1A3A5F';
-    ctx.fillRect(x, y, w, h);
-
-    var armL = 0, legS = 0, bodyB = 0;
-    if (action === 'walk1'){ armL = -2; legS = 1; bodyB = 1; }
-    else if (action === 'walk2'){ armL = -1; bodyB = 0; }
-    else if (action === 'walk3'){ armL = 1; legS = -1; bodyB = 1; }
-    else if (action === 'jump'){ bodyB = -3; armL = -4; }
-    else if (action === 'fall'){ bodyB = 1; armL = 1; }
-    else if (action === 'land'){ bodyB = 3; }
-
-    var cx = ox + cw * 0.5;
-    var cy = oy + ch * 0.5;
-
-    // Head
-    ctx.fillStyle = '#E5A373';
-    ctx.fillRect(cx - cw*0.15, oy + 2 + bodyB, cw*0.3, ch*0.15);
-    ctx.fillStyle = '#1E4D7B';
-    ctx.fillRect(cx - cw*0.18, oy - bodyB, cw*0.36, ch*0.12);
-    ctx.fillStyle = '#2E3440';
-    ctx.fillRect(cx - 1, oy + 2 + bodyB, 1, 1);
-    ctx.fillRect(cx + 1, oy + 2 + bodyB, 1, 1);
-    ctx.fillRect(cx - 1, oy + 4 + bodyB, 3, 1);
-
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(cx - cw*0.2, oy + ch*0.15 + bodyB, cw*0.4, ch*0.25);
-    ctx.fillStyle = '#1E4D7B';
-    ctx.fillRect(cx - cw*0.22, oy + ch*0.35 + bodyB, cw*0.44, ch*0.35);
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(cx - cw*0.28, oy + ch*0.23 + armL + bodyB, cw*0.12, ch*0.18);
-    ctx.fillRect(cx + cw*0.16, oy + ch*0.23 - armL + bodyB, cw*0.12, ch*0.18);
-
-    ctx.fillStyle = '#1E4D7B';
-    ctx.fillRect(cx - cw*0.12 + legS, oy + ch*0.70 + bodyB, cw*0.1, ch*0.25);
-    ctx.fillRect(cx + cw*0.02 - legS, oy + ch*0.70 + bodyB, cw*0.1, ch*0.25);
-
-    ctx.fillStyle = '#654321';
-    ctx.fillRect(cx - cw*0.15, oy + ch*0.94 + bodyB, cw*0.12, ch*0.05);
-    ctx.fillRect(cx + cw*0.03, oy + ch*0.94 + bodyB, cw*0.12, ch*0.05);
-  }
-
-  var ATLAS_SRC = generateCharacterSprites();
-
-  // Old atlas reference (kept for compatibility but overridden):
-  // var ATLAS_SRC = "data:image/png;base64,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";
-  var atlas = new Image();
-  var atlasReady = false;
-  atlas.onload = function(){ atlasReady = true; };
-  atlas.src = ATLAS_SRC;
-
-  // New character sprite definitions (larger and with more animation frames)
-  var SPR = {
-    groundCap:   { x: 0,   y: 0,  w: 18, h: 18 },
-    groundFill:  { x: 18,  y: 0,  w: 18, h: 18 },
-    brick: [
-      { x: 36, y: 0, w: 18, h: 18 },
-      { x: 54, y: 0, w: 18, h: 18 },
-      { x: 72, y: 0, w: 18, h: 18 },
-      { x: 90, y: 0, w: 18, h: 18 }
-    ],
-    bonusIcon:   { x: 108, y: 0,  w: 18, h: 18 },
-    bonusPlain:  { x: 126, y: 0,  w: 18, h: 18 },
-    mushroom:    { x: 144, y: 0,  w: 18, h: 18 },
-    coin:        { x: 162, y: 0,  w: 18, h: 18 },
-    poleShaft:   { x: 180, y: 0,  w: 18, h: 18 },
-    flag:        { x: 198, y: 0,  w: 18, h: 18 },
-    playerSmall: { x: 0,   y: 18, w: 24, h: 24 },
-    playerBig:   { x: 24,  y: 18, w: 24, h: 24 },
-    enemy:       { x: 48,  y: 18, w: 24, h: 24 },
-    // New procedurally-generated character frames (40x56 each for small)
-    playerSmallIdle:  { x: 220, y: 0,  w: 40, h: 56 },
-    playerSmallWalk1: { x: 265, y: 0,  w: 40, h: 56 },
-    playerSmallWalk2: { x: 310, y: 0,  w: 40, h: 56 },
-    playerSmallWalk3: { x: 355, y: 0,  w: 40, h: 56 },
-    playerSmallWalk4: { x: 400, y: 0,  w: 40, h: 56 },
-    playerSmallJump:  { x: 445, y: 0,  w: 40, h: 56 },
-    playerSmallFall:  { x: 490, y: 0,  w: 40, h: 56 },
-    playerSmallLand:  { x: 535, y: 0,  w: 40, h: 56 },
-    // Big character frames (50x70)
-    playerBigIdle:  { x: 220, y: 65, w: 50, h: 70 },
-    playerBigWalk1: { x: 275, y: 65, w: 50, h: 70 },
-    playerBigWalk2: { x: 330, y: 65, w: 50, h: 70 },
-    playerBigWalk3: { x: 385, y: 65, w: 50, h: 70 },
-    playerBigWalk4: { x: 440, y: 65, w: 50, h: 70 },
-    playerBigJump:  { x: 495, y: 65, w: 50, h: 70 },
-    playerBigFall:  { x: 550, y: 65, w: 50, h: 70 },
-    playerBigLand:  { x: 560, y: 65, w: 50, h: 70 }
-  };
-
-  function drawSprite(s, dx, dy, dw, dh, flip){
-    if (!atlasReady) return;
-    if (flip){
-      ctx.save();
-      ctx.translate(dx + dw, dy);
-      ctx.scale(-1, 1);
-      ctx.drawImage(atlas, s.x, s.y, s.w, s.h, 0, 0, dw, dh);
-      ctx.restore();
-    } else {
-      ctx.drawImage(atlas, s.x, s.y, s.w, s.h, dx, dy, dw, dh);
-    }
-  }
-
-  function waitForAtlas(cb){
-    if (atlasReady) cb();
-    else requestAnimationFrame(function(){ waitForAtlas(cb); });
-  }
-
-  // ---- world constants -----------------------------------------------
-  var CANVAS_W = 800, CANVAS_H = 450;
-  var GROUND_TOP = 380;
-  var WORLD_W = 3400;
-  var GRAVITY = 0.65;
-  var JUMP_V = -13.5;
-  var MOVE_SPEED = 4.2;
-  var MAX_FALL = 16;
-  var PIT_Y = 480;
-  var FLAG_X = 3300;
-
-  var grounds = [
-    { x: 0,    y: GROUND_TOP, w: 560,  h: 70 },
-    { x: 680,  y: GROUND_TOP, w: 420,  h: 70 },
-    { x: 1200, y: GROUND_TOP, w: 600,  h: 70 },
-    { x: 1900, y: GROUND_TOP, w: 1500, h: 70 }
-  ];
-
-  var platforms = [
-    { x: 260,  y: 260, w: 140, h: 24 },
-    { x: 760,  y: 230, w: 160, h: 24 },
-    { x: 1000, y: 300, w: 120, h: 24 },
-    { x: 1350, y: 250, w: 150, h: 24 },
-    { x: 2000, y: 270, w: 160, h: 24 },
-    { x: 2300, y: 210, w: 140, h: 24 },
-    { x: 2650, y: 270, w: 160, h: 24 }
-  ];
-
-  var pipes = [
-    { x: 460,  y: GROUND_TOP - 56, w: 48, h: 56 },
-    { x: 2420, y: GROUND_TOP - 56, w: 48, h: 56 }
-  ];
-
-  var mushroomsInit = [
-    { x: 310,  y: 260 - 26 },
-    { x: 850,  y: GROUND_TOP - 26 },
-    { x: 1400, y: 250 - 26 },
-    { x: 2100, y: GROUND_TOP - 26 },
-    { x: 2340, y: 210 - 26 }
-  ];
-
-  var enemiesInit = [
-    { x: 780,  y: GROUND_TOP - 24, min: 700,  max: 1080, speed: 1.2 },
-    { x: 1300, y: GROUND_TOP - 24, min: 1220, max: 1780, speed: 1.4 },
-    { x: 2050, y: GROUND_TOP - 24, min: 1950, max: 2280, speed: 1.3 },
-    { x: 2020, y: 270 - 24,        min: 2000, max: 2140, speed: 1.0 },
-    { x: 2700, y: GROUND_TOP - 24, min: 2600, max: 3100, speed: 1.5 }
-  ];
-
-  var bonusBlocksInit = [
-    { x: 150,  y: 300, item: 'coin' },
-    { x: 900,  y: 300, item: 'mushroom' },
-    { x: 2200, y: 300, item: 'coin' }
-  ];
-
-  var coinsInit = [
-    { x: 590,  y: 320 }, { x: 620,  y: 296 }, { x: 650,  y: 320 },
-    { x: 1120, y: 330 }, { x: 1150, y: 300 }, { x: 1180, y: 330 },
-    { x: 3150, y: 330 }, { x: 3200, y: 306 }, { x: 3250, y: 330 }
-  ];
-
-  // ---- mutable state ----------------------------------------------------
-  var player, mushrooms, enemies, coins, bonusBlocks, coinsCollected;
-  var camera, score, lives, gameState;
-  var solids = grounds.concat(platforms, pipes);
-  var keys = { left:false, right:false };
-  var jumpQueued = false;
-
-  function rectsOverlap(a, b){
-    return a.x < b.x + b.w && a.x + a.w > b.x &&
-           a.y < b.y + b.h && a.y + a.h > b.y;
-  }
-
-  function freshPlayer(){
-    return { x: 40, y: GROUND_TOP - 56, w: 40, h: 56, vx: 0, vy: 0,
-             onGround: false, big: false, facing: 1, invuln: 0, walk: 0,
-             animState: 'idle', walkFrame: 0, lastOnGround: true, landSquash: 0, lastVy: 0 };
-  }
-
-  function resetWorldState(){
-    player = freshPlayer();
-    mushrooms = mushroomsInit.map(function(m){
-      return { x: m.x, y: m.y, w: 26, h: 26, collected: false };
-    });
-    enemies = enemiesInit.map(function(e){
-      return { x: e.x, y: e.y, w: 28, h: 24, min: e.min, max: e.max,
-               speed: e.speed, dir: 1, alive: true };
-    });
-    bonusBlocks = bonusBlocksInit.map(function(b){
-      return { x: b.x, y: b.y, w: 32, h: 32, item: b.item, hit: false, bump: 0, bonus: true };
-    });
-    coins = coinsInit.map(function(c){
-      return { x: c.x, y: c.y, w: 18, h: 18, collected: false };
-    });
-    coinsCollected = 0;
-    camera = { x: 0 };
-    solids = grounds.concat(platforms, pipes, bonusBlocks);
-  }
-
-  function resetRun(){
-    score = 0;
-    lives = 3;
-    gameState = 'playing';
-    resetWorldState();
-    hideOverlay();
-  }
-
-  function loseLife(){
-    lives -= 1;
-    if (lives <= 0){
-      lives = 0;
-      gameState = 'gameover';
-      showOverlay('Game Over', 'Score ' + score);
-    } else {
-      resetWorldState();
-    }
-  }
-
-  function win(){
-    gameState = 'win';
-    showOverlay('Level Clear!', 'Score ' + score);
-  }
-
-  function growPlayer(){
-    if (!player.big){
-      var oldH = player.h;
-      player.big = true;
-      player.h = 70;
-      player.w = 50;
-      player.y -= (player.h - oldH);
-    }
-    score += 50;
-  }
-
-  function shrinkPlayer(){
-    var oldH = player.h;
-    var oldW = player.w;
-    player.big = false;
-    player.h = 56;
-    player.w = 40;
-    player.y += (oldH - player.h);
-    player.invuln = 90;
-  }
-
-  function collectCoin(){
-    coinsCollected += 1;
-    score += 10;
-  }
-
-  function bumpBlock(block){
-    block.hit = true;
-    block.bump = -8;
-    if (block.item === 'mushroom'){
-      mushrooms.push({ x: block.x + 3, y: block.y - 26, w: 26, h: 26, collected: false });
-    } else {
-      collectCoin();
-    }
-  }
-
-  // ---- overlay / HUD ------------------------------------------------
-  var overlayEl = document.getElementById('overlay');
-  var overlayTitle = document.getElementById('overlayTitle');
-  var overlaySub = document.getElementById('overlaySub');
-  function showOverlay(title, sub){
-    overlayTitle.textContent = title;
-    overlaySub.textContent = sub;
-    overlayEl.hidden = false;
-  }
-  function hideOverlay(){ overlayEl.hidden = true; }
-
-  var statScore = document.getElementById('statScore');
-  var statCoins = document.getElementById('statCoins');
-  var statLives = document.getElementById('statLives');
-  var statSize = document.getElementById('statSize');
-  function syncHud(){
-    statScore.textContent = String(score).padStart(4, '0');
-    statCoins.textContent = String(coinsCollected).padStart(2, '0');
-    statLives.textContent = String(lives);
-    statSize.textContent = player.big ? 'Big' : 'Small';
-  }
-
-  // ---- input ----------------------------------------------------------
-  window.addEventListener('keydown', function(e){
-    switch (e.code){
-      case 'ArrowLeft': case 'KeyA': keys.left = true; e.preventDefault(); break;
-      case 'ArrowRight': case 'KeyD': keys.right = true; e.preventDefault(); break;
-      case 'ArrowUp': case 'KeyW': case 'Space': jumpQueued = true; e.preventDefault(); break;
-      case 'KeyR': resetRun(); e.preventDefault(); break;
-    }
-  });
-  window.addEventListener('keyup', function(e){
-    switch (e.code){
-      case 'ArrowLeft': case 'KeyA': keys.left = false; break;
-      case 'ArrowRight': case 'KeyD': keys.right = false; break;
-    }
-  });
-
-  function bindHold(el, onDown, onUp){
-    el.addEventListener('pointerdown', function(e){ e.preventDefault(); onDown(); });
-    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
-      el.addEventListener(ev, function(e){ e.preventDefault(); onUp(); });
-    });
-  }
-  bindHold(document.getElementById('btnLeft'),
-    function(){ keys.left = true; }, function(){ keys.left = false; });
-  bindHold(document.getElementById('btnRight'),
-    function(){ keys.right = true; }, function(){ keys.right = false; });
-  document.getElementById('btnJump').addEventListener('pointerdown', function(e){
-    e.preventDefault(); jumpQueued = true;
-  });
-  document.getElementById('restartBtn').addEventListener('click', resetRun);
-
-  // ---- update -----------------------------------------------------------
-  function moveAndCollide(){
-    // horizontal
-    player.x += player.vx;
-    player.x = Math.max(0, Math.min(player.x, WORLD_W - player.w));
-    for (var i = 0; i < solids.length; i++){
-      var s = solids[i];
-      if (rectsOverlap(player, s)){
-        if (player.vx > 0) player.x = s.x - player.w;
-        else if (player.vx < 0) player.x = s.x + s.w;
-      }
-    }
-    // vertical
-    player.vy = Math.min(player.vy + GRAVITY, MAX_FALL);
-    player.y += player.vy;
-    player.onGround = false;
-    for (var j = 0; j < solids.length; j++){
-      var s2 = solids[j];
-      if (rectsOverlap(player, s2)){
-        if (player.vy > 0){
-          player.y = s2.y - player.h;
-          player.vy = 0;
-          player.onGround = true;
-        } else if (player.vy < 0){
-          player.y = s2.y + s2.h;
-          player.vy = 0;
-          if (s2.bonus && !s2.hit) bumpBlock(s2);
-        }
-      }
-    }
-  }
-
-  function updateBonusBlocks(){
-    for (var i = 0; i < bonusBlocks.length; i++){
-      var b = bonusBlocks[i];
-      if (b.bump < 0) b.bump = Math.min(0, b.bump + 1);
-    }
-  }
-
-  function updateCoins(){
-    for (var i = 0; i < coins.length; i++){
-      var c = coins[i];
-      if (c.collected) continue;
-      if (rectsOverlap(player, c)){
-        c.collected = true;
-        collectCoin();
-      }
-    }
-  }
-
-  function updateEnemies(){
-    for (var i = 0; i < enemies.length; i++){
-      var e = enemies[i];
-      if (!e.alive) continue;
-      e.x += e.speed * e.dir;
-      if (e.x < e.min){ e.x = e.min; e.dir = 1; }
-      if (e.x + e.w > e.max){ e.x = e.max - e.w; e.dir = -1; }
-
-      if (rectsOverlap(player, e)){
-        var playerPrevBottom = player.y + player.h - player.vy;
-        var stomping = player.vy > 0 && playerPrevBottom <= e.y + 8;
-        if (stomping){
-          e.alive = false;
-          score += 100;
-          player.vy = -9;
-        } else if (player.invuln <= 0){
-          if (player.big) shrinkPlayer();
-          else { loseLife(); return; }
-        }
-      }
-    }
-  }
-
-  function updateMushrooms(){
-    for (var i = 0; i < mushrooms.length; i++){
-      var m = mushrooms[i];
-      if (m.collected) continue;
-      if (rectsOverlap(player, m)){
-        m.collected = true;
-        growPlayer();
-      }
-    }
-  }
-
-  function update(){
-    if (gameState !== 'playing') return;
-
-    if (keys.left && !keys.right){ player.vx = -MOVE_SPEED; player.facing = -1; }
-    else if (keys.right && !keys.left){ player.vx = MOVE_SPEED; player.facing = 1; }
-    else player.vx = 0;
-
-    if (jumpQueued){
-      if (player.onGround){ player.vy = JUMP_V; player.onGround = false; }
-      jumpQueued = false;
-    }
-
-    moveAndCollide();
-    if (gameState !== 'playing') return;
-
-    updateEnemies();
-    if (gameState !== 'playing') return;
-
-    updateMushrooms();
-    updateCoins();
-    updateBonusBlocks();
-
-    if (player.invuln > 0) player.invuln -= 1;
-    if (player.vx !== 0) player.walk += 1;
-
-    updatePlayerAnimation();
-
-    if (player.y > PIT_Y){ loseLife(); if (gameState !== 'playing') return; }
-
-    if (player.x + player.w >= FLAG_X){ win(); }
-
-    camera.x = Math.max(0, Math.min(player.x + player.w/2 - CANVAS_W/2, WORLD_W - CANVAS_W));
-    syncHud();
-  }
-
-  // ---- animation -------------------------------------------------------
-  function updatePlayerAnimation(){
-    var wasOnGround = player.lastOnGround;
-    player.lastOnGround = player.onGround;
-
-    // Detect landing - transition from air to ground
-    if (player.onGround && !wasOnGround && Math.abs(player.lastVy) > 5){
-      player.landSquash = 8;
-    }
-
-    // Decay landing squash
-    if (player.landSquash > 0) player.landSquash -= 1;
-
-    // Update animation state
-    if (!player.onGround){
-      if (player.vy < -2) player.animState = 'jump';
-      else if (player.vy > 4) player.animState = 'fall';
-      else player.animState = 'fall';
-    } else {
-      if (Math.abs(player.vx) > 0.5) player.animState = 'walk';
-      else player.animState = 'idle';
-    }
-
-    // Update walk frame for walk cycle
-    if (player.animState === 'walk'){
-      player.walkFrame = Math.floor(player.walk / 8) % 4;
-    } else {
-      player.walkFrame = 0;
-    }
-
-    player.lastVy = player.vy;
-  }
-
-  // ---- drawing ------------------------------------------------------
-  function drawSky(){
-    var g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-    g.addColorStop(0, '#6EC6E8');
-    g.addColorStop(1, '#BFEAF0');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    var parallax = camera.x * 0.35;
-    var cloudPositions = [120, 520, 900, 1400, 1900, 2400, 2900];
-    for (var i = 0; i < cloudPositions.length; i++){
-      var cx = cloudPositions[i] - parallax;
-      cx = ((cx % (WORLD_W + 400)) + (WORLD_W + 400)) % (WORLD_W + 400) - 200;
-      drawCloud(cx, 60 + (i % 3) * 26);
-    }
-  }
-
-  function drawCloud(x, y){
-    ctx.beginPath();
-    ctx.ellipse(x, y, 26, 16, 0, 0, Math.PI*2);
-    ctx.ellipse(x+22, y+6, 20, 13, 0, 0, Math.PI*2);
-    ctx.ellipse(x-22, y+6, 20, 13, 0, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  var hillX = [80, 480, 900, 1350, 1750, 2150, 2550, 2950, 3350];
-  var bushX = [180, 520, 830, 1260, 1620, 2020, 2480, 2900, 3260];
-
-  function drawHills(){
-    var parallax = camera.x * 0.45;
-    for (var i = 0; i < hillX.length; i++){
-      var sx = hillX[i] - parallax;
-      if (sx < -100 || sx > CANVAS_W + 100) continue;
-      ctx.fillStyle = '#3E9A57';
-      ctx.beginPath();
-      ctx.moveTo(sx - 70, GROUND_TOP);
-      ctx.quadraticCurveTo(sx, GROUND_TOP - 70, sx + 70, GROUND_TOP);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.14)';
-      ctx.beginPath();
-      ctx.arc(sx, GROUND_TOP - 46, 16, Math.PI, 0);
-      ctx.fill();
-    }
-  }
-
-  function drawBushes(){
-    for (var i = 0; i < bushX.length; i++){
-      var sx = bushX[i] - camera.x;
-      if (sx < -60 || sx > CANVAS_W + 60) continue;
-      ctx.fillStyle = '#3E9A57';
-      ctx.beginPath();
-      ctx.ellipse(sx, GROUND_TOP - 10, 22, 14, 0, 0, Math.PI*2);
-      ctx.ellipse(sx - 18, GROUND_TOP - 6, 16, 11, 0, 0, Math.PI*2);
-      ctx.ellipse(sx + 18, GROUND_TOP - 6, 16, 11, 0, 0, Math.PI*2);
-      ctx.fill();
-    }
-  }
-
-  function drawGround(){
-    var TS = 35;
-    for (var i = 0; i < grounds.length; i++){
-      var g = grounds[i];
-      var x0 = g.x - camera.x;
-      if (x0 + g.w < 0 || x0 > CANVAS_W) continue;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x0, g.y, g.w, g.h);
-      ctx.clip();
-      for (var gx = 0; gx < g.w; gx += TS){
-        drawSprite(SPR.groundCap, x0 + gx, g.y, TS, TS);
-        for (var gy = TS; gy < g.h; gy += TS){
-          drawSprite(SPR.groundFill, x0 + gx, g.y + gy, TS, TS);
-        }
-      }
-      ctx.restore();
-    }
-  }
-
-  function drawBrickRect(x0, y0, w, h, tileSize){
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(x0, y0, w, h);
-    ctx.clip();
-    var i = 0;
-    for (var bx = 0; bx < w; bx += tileSize){
-      for (var by = 0; by < h; by += tileSize){
-        drawSprite(SPR.brick[i % SPR.brick.length], x0 + bx, y0 + by, tileSize, tileSize);
-        i++;
-      }
-    }
-    ctx.restore();
-  }
-
-  function drawPlatforms(){
-    for (var i = 0; i < platforms.length; i++){
-      var p = platforms[i];
-      var x = p.x - camera.x;
-      if (x + p.w < 0 || x > CANVAS_W) continue;
-      drawBrickRect(x, p.y, p.w, p.h, 24);
-    }
-  }
-
-  function drawPipes(){
-    for (var i = 0; i < pipes.length; i++){
-      var p = pipes[i];
-      var x = p.x - camera.x;
-      if (x + p.w < 0 || x > CANVAS_W) continue;
-      drawBrickRect(x, p.y, p.w, p.h, 28);
-    }
-  }
-
-  function drawBonusBlocks(){
-    for (var i = 0; i < bonusBlocks.length; i++){
-      var b = bonusBlocks[i];
-      var x = b.x - camera.x, y = b.y + b.bump;
-      if (x + b.w < 0 || x > CANVAS_W) continue;
-      drawSprite(b.hit ? SPR.bonusPlain : SPR.bonusIcon, x, y, b.w, b.h);
-    }
-  }
-
-  function drawCoins(){
-    var t = performance.now() / 260;
-    for (var i = 0; i < coins.length; i++){
-      var c = coins[i];
-      if (c.collected) continue;
-      var x = c.x - camera.x;
-      if (x + c.w < 0 || x > CANVAS_W) continue;
-      var scaleX = Math.cos(t + c.x * 0.02);
-      var cx = x + c.w/2, cy = c.y + c.h/2;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.scale(Math.max(0.15, Math.abs(scaleX)), 1);
-      drawSprite(SPR.coin, -c.w/2, -c.h/2, c.w, c.h);
-      ctx.restore();
-    }
-  }
-
-  function drawMushrooms(){
-    for (var i = 0; i < mushrooms.length; i++){
-      var m = mushrooms[i];
-      if (m.collected) continue;
-      var x = m.x - camera.x;
-      if (x + m.w < 0 || x > CANVAS_W) continue;
-      drawSprite(SPR.mushroom, x, m.y, m.w, m.h);
-    }
-  }
-
-  function drawEnemies(){
-    for (var i = 0; i < enemies.length; i++){
-      var e = enemies[i];
-      if (!e.alive) continue;
-      var x = e.x - camera.x;
-      if (x + e.w < 0 || x > CANVAS_W) continue;
-      drawSprite(SPR.enemy, x - 2, e.y - 2, e.w + 4, e.h + 4, e.dir < 0);
-    }
-  }
-
-  function drawFlag(){
-    var x = FLAG_X - camera.x;
-    if (x < -40 || x > CANVAS_W + 40) return;
-    var poleTop = 140, TS = 18;
-    for (var py = 0; poleTop + py < GROUND_TOP; py += TS){
-      drawSprite(SPR.poleShaft, x + 4, poleTop + py, TS, TS);
-    }
-    drawSprite(SPR.flag, x - 6, poleTop - 2, 18, 18);
-  }
-
-  function drawPlayer(){
-    var x = player.x - camera.x, y = player.y, w = player.w, h = player.h;
-    var flash = player.invuln > 0 && Math.floor(player.invuln / 6) % 2 === 0;
-    if (flash) ctx.globalAlpha = 0.4;
-
-    // Select sprite based on animation state and player size
-    var spriteKey;
-    var prefix = player.big ? 'playerBig' : 'playerSmall';
-
-    if (player.animState === 'walk'){
-      var walkFrames = ['Walk1', 'Walk2', 'Walk3', 'Walk4'];
-      spriteKey = prefix + walkFrames[player.walkFrame % 4];
-    } else if (player.animState === 'jump'){
-      spriteKey = prefix + 'Jump';
-    } else if (player.animState === 'fall'){
-      spriteKey = prefix + 'Fall';
-    } else if (player.landSquash > 0){
-      spriteKey = prefix + 'Land';
-    } else {
-      spriteKey = prefix + 'Idle';
-    }
-
-    var sprite = SPR[spriteKey] || (player.big ? SPR.playerBig : SPR.playerSmall);
-
-    drawSprite(sprite, x, y, w, h, player.facing < 0);
-
-    ctx.globalAlpha = 1;
-  }
-
-  function draw(){
-    drawSky();
-    drawHills();
-    drawGround();
-    drawBushes();
-    drawPipes();
-    drawPlatforms();
-    drawBonusBlocks();
-    drawMushrooms();
-    drawCoins();
-    drawFlag();
-    drawEnemies();
-    drawPlayer();
-  }
-
-  // ---- main loop -------------------------------------------------------
-  function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  function boot(state){
-    resetRun();
-    if (state && typeof state.score === 'number') score = state.score;
-    waitForAtlas(function(){ requestAnimationFrame(loop); });
-  }
-
-  if (window.claude && window.claude.hot){
-    window.claude.hot.snapshot(function(){ return { score: score }; });
-    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot(window.claude.hot.data || {});
-  } else {
-    boot();
-  }
-})();
+function showGuide(){
+  document.getElementById('guideModal').classList.add('show');
+}
+function hideGuide(){
+  document.getElementById('guideModal').classList.remove('show');
+}
+window.addEventListener('click', function(e){
+  const modal = document.getElementById('guideModal');
+  if(e.target === modal) hideGuide();
+});
+document.addEventListener('keydown', function(e){
+  if(e.code === 'Escape') hideGuide();
+});
 </script>
+</body>
