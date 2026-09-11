@@ -247,6 +247,61 @@
   var ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
+  // ---- audio system ------------------------------------------------
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var masterVolume = 0.3;
+
+  function playSound(frequency, duration, type, callback){
+    if (!audioCtx) return;
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = frequency;
+    osc.type = type || 'sine';
+    gain.gain.setValueAtTime(masterVolume * 0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    osc.start(now);
+    osc.stop(now + duration);
+    if (callback) setTimeout(callback, duration * 1000);
+  }
+
+  function soundJump(){
+    playSound(400, 0.15, 'sine');
+    playSound(600, 0.1, 'sine', function(){
+      playSound(800, 0.08, 'sine');
+    });
+  }
+
+  function soundCoin(){
+    playSound(800, 0.1, 'sine');
+    playSound(1200, 0.1, 'sine');
+  }
+
+  function soundStomp(){
+    playSound(150, 0.15, 'sine');
+  }
+
+  function soundPowerUp(){
+    var notes = [523, 659, 784];
+    notes.forEach(function(freq, idx){
+      setTimeout(function(){ playSound(freq, 0.15, 'sine'); }, idx * 100);
+    });
+  }
+
+  function soundGameOver(){
+    playSound(400, 0.2, 'sine');
+    playSound(300, 0.3, 'sine');
+  }
+
+  function soundVictory(){
+    var notes = [523, 659, 784, 1047];
+    notes.forEach(function(freq, idx){
+      setTimeout(function(){ playSound(freq, 0.2, 'sine'); }, idx * 150);
+    });
+  }
+
   // ---- sprite atlas ------------------------------------------------
   // Generate character sprite sheet with animation frames
   function generateCharacterSprites(){
@@ -537,6 +592,7 @@
     if (lives <= 0){
       lives = 0;
       gameState = 'gameover';
+      soundGameOver();
       showOverlay('Game Over', 'Score ' + score);
     } else {
       resetWorldState();
@@ -545,6 +601,7 @@
 
   function win(){
     gameState = 'win';
+    soundVictory();
     showOverlay('Level Clear!', 'Score ' + score);
   }
 
@@ -555,6 +612,7 @@
       player.h = 70;
       player.w = 50;
       player.y -= (player.h - oldH);
+      soundPowerUp();
     }
     score += 50;
   }
@@ -572,6 +630,7 @@
   function collectCoin(){
     coinsCollected += 1;
     score += 10;
+    soundCoin();
   }
 
   function bumpBlock(block){
@@ -702,6 +761,7 @@
           e.alive = false;
           score += 100;
           player.vy = -9;
+          soundStomp();
         } else if (player.invuln <= 0){
           if (player.big) shrinkPlayer();
           else { loseLife(); return; }
@@ -729,7 +789,7 @@
     else player.vx = 0;
 
     if (jumpQueued){
-      if (player.onGround){ player.vy = JUMP_V; player.onGround = false; }
+      if (player.onGround){ player.vy = JUMP_V; player.onGround = false; soundJump(); }
       jumpQueued = false;
     }
 
