@@ -1,51 +1,15 @@
-<title>Pixel Plumber - Start</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<title>Pixel Plumber - Retro Arcade</title>
 <style>
-  :root{
-    --bg: #E9EEF0;
-    --surface: #FFFFFF;
-    --bezel: #16232B;
-    --ink: #16232B;
-    --muted: #5A6C73;
-    --accent: #E8622C;
-    --accent-ink: #FFFFFF;
-    --accent-2: #2E8B7A;
-    --line: rgba(22,35,43,0.14);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg: #0F1A20;
-      --surface: #152229;
-      --bezel: #0A1216;
-      --ink: #E7EEF0;
-      --muted: #93A6AC;
-      --accent: #FF7A45;
-      --accent-2: #45C7A8;
-      --line: rgba(231,238,240,0.14);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg: #0F1A20;
-    --surface: #152229;
-    --bezel: #0A1216;
-    --ink: #E7EEF0;
-    --muted: #93A6AC;
-    --accent: #FF7A45;
-    --accent-2: #45C7A8;
-    --line: rgba(231,238,240,0.14);
-  }
-
   *{ box-sizing:border-box; }
   body{
-    background: linear-gradient(135deg, #6EC6E8 0%, #BFEAF0 100%);
-    color: var(--ink);
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    margin:0;
-    padding: 0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
+    background: linear-gradient(to bottom, #FF006E, #FB5607, #FFBE0B);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Arial Black', sans-serif;
   }
 
   .title-screen{
@@ -53,103 +17,181 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 32px;
-    padding: 40px;
+    gap: 24px;
     text-align: center;
   }
 
-  .title-header{
-    text-align: center;
+  .title-box{
+    background: rgba(0,0,0,0.3);
+    padding: 20px;
+    border-radius: 4px;
+    border: 4px solid #000;
   }
 
-  .title-header h1{
-    font-family:'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    font-weight:800;
-    font-size: 72px;
-    margin:0;
-    color: #16232B;
-    text-shadow: 3px 3px 0px var(--accent);
-    letter-spacing: 2px;
+  .title-box h1{
+    font-size: 64px;
+    margin: 0;
+    color: #FFFF00;
+    text-shadow: 4px 4px 0px #FF006E, -2px -2px 0px #000;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+    font-weight: bold;
   }
 
-  .title-header p{
-    margin: 12px 0 0;
-    font-size: 18px;
-    color: #16232B;
+  .start-text{
+    background: #000;
+    color: #FFFF00;
+    padding: 12px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    border: 2px solid #FFFF00;
+    box-shadow: 0 4px 0px #FF006E;
+    cursor: pointer;
+    transition: all 0.2s;
     letter-spacing: 1px;
-    font-weight: 600;
+  }
+
+  .start-text:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #FF006E;
+  }
+
+  .start-text:active{
+    transform: translateY(2px);
+    box-shadow: 0 2px 0px #FF006E;
   }
 
   .button-group{
     display: flex;
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
   .btn{
-    border: none;
-    padding: 14px 32px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
+    background: #FF006E;
+    color: #FFF;
+    padding: 12px 20px;
+    border-radius: 2px;
+    font-size: 13px;
     font-weight: bold;
-    box-shadow: 0 4px 0px;
+    box-shadow: 0 3px 0px #C1003D;
+    border: none;
+    cursor: pointer;
     transition: all 0.2s;
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Arial Black', sans-serif;
     text-decoration: none;
     display: inline-block;
   }
 
-  .btn:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0px;
+  .btn:nth-child(2){
+    background: #FB5607;
+    box-shadow: 0 3px 0px #C23B05;
   }
 
-  .btn:active{
+  .btn:nth-child(2):active, .btn:nth-child(2):hover{
+    box-shadow: 0 3px 0px #C23B05;
+  }
+
+  .btn:hover, .btn:active{
     transform: translateY(2px);
-    box-shadow: 0 2px 0px;
+    box-shadow: 0 1px 0px #C1003D;
   }
 
-  .btn-start{
-    background: #E8622C;
-    color: white;
-    box-shadow: 0 4px 0px #C94A20;
+  .btn:nth-child(2):hover, .btn:nth-child(2):active{
+    box-shadow: 0 1px 0px #C23B05;
   }
 
-  .btn-start:hover{
-    box-shadow: 0 6px 0px #C94A20;
-  }
-
-  .btn-start:active{
-    box-shadow: 0 2px 0px #C94A20;
-  }
-
-  .btn-guide{
-    background: #2E8B7A;
-    color: white;
-    box-shadow: 0 4px 0px #1F5E52;
-  }
-
-  .btn-guide:hover{
-    box-shadow: 0 6px 0px #1F5E52;
-  }
-
-  .btn-guide:active{
-    box-shadow: 0 2px 0px #1F5E52;
-  }
-
-  .subtitle{
-    font-size: 12px;
-    color: #5A6C73;
+  .copyright{
+    font-size: 11px;
+    color: #000;
     margin: 0;
-    text-align: center;
-    max-width: 600px;
-    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  #guideModal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #guideModal.show{
+    display: flex;
+  }
+
+  .modal-content{
+    background: linear-gradient(to bottom, #FF006E, #FB5607);
+    padding: 24px;
+    border-radius: 4px;
+    max-width: 480px;
+    margin: 20px;
+    border: 4px solid #000;
+    box-shadow: 0 8px 0px rgba(0,0,0,0.5);
+  }
+
+  .modal-content h2{
+    margin-top: 0;
+    color: #FFFF00;
+    text-shadow: 2px 2px 0px #000;
+    font-size: 28px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .modal-content table{
+    width: 100%;
+    border-collapse: collapse;
+    background: #000;
+    border: 2px solid #FFFF00;
+  }
+
+  .modal-content tr{
+    border-bottom: 1px solid #FFFF00;
+  }
+
+  .modal-content td{
+    padding: 8px;
+    text-align: left;
+    color: #FFFF00;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+  }
+
+  .modal-content td:first-child{
+    font-weight: bold;
+    width: 40%;
+  }
+
+  .close-btn{
+    margin-top: 16px;
+    background: #FFFF00;
+    color: #000;
+    border: 2px solid #000;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0px #000;
+  }
+
+  .close-btn:active{
+    transform: translateY(2px);
   }
 
   @media (max-width: 640px){
-    .title-header h1{
+    .title-box h1{
       font-size: 48px;
     }
     .button-group{
@@ -159,68 +201,80 @@
     .btn{
       width: 100%;
     }
+    .start-text{
+      width: 100%;
+    }
   }
 </style>
 
 <body>
 <div class="title-screen">
-  <div class="title-header">
+  <div class="title-box">
     <h1>PIXEL PLUMBER</h1>
-    <p>Jump • Grow • Stomp • Win</p>
+  </div>
+
+  <div class="start-text" onclick="document.location='game.html'">
+    ▶ PRESS START ◀
   </div>
 
   <div class="button-group">
-    <a href="game.html" class="btn btn-start">START GAME</a>
-    <button class="btn btn-guide" onclick="showGuide()">HOW TO PLAY</button>
+    <a href="game.html" class="btn">1P START</a>
+    <button class="btn" onclick="showGuide()">SETTINGS</button>
   </div>
 
-  <p class="subtitle">A tiny side-scrolling platformer • Run, jump, grow big • Stomp enemies • Reach the flag</p>
+  <p class="copyright">© 1985 RETRO GAMES INC.</p>
 </div>
 
-<div id="guideModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000;">
-  <div style="background:white; padding:32px; border-radius:12px; max-width:500px; margin:20px;">
-    <h2 style="margin-top:0; color:#16232B;">How to Play</h2>
-    <table style="width:100%; border-collapse:collapse;">
-      <tr style="border-bottom:1px solid #ccc;">
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#E8622C;">Controls</td>
-        <td style="padding:10px; text-align:left;">Arrow Keys / A D</td>
-      </tr>
-      <tr style="border-bottom:1px solid #ccc;">
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#E8622C;">Jump</td>
-        <td style="padding:10px; text-align:left;">Space / Up / W</td>
-      </tr>
-      <tr style="border-bottom:1px solid #ccc;">
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#E8622C;">Restart</td>
-        <td style="padding:10px; text-align:left;">R Key</td>
+<div id="guideModal">
+  <div class="modal-content">
+    <h2>HOW TO PLAY</h2>
+    <table>
+      <tr>
+        <td>MOVE</td>
+        <td>← → / A D</td>
       </tr>
       <tr>
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#2E8B7A;">Mushroom</td>
-        <td style="padding:10px; text-align:left;">Grow big (one extra hit)</td>
-      </tr>
-      <tr style="border-bottom:1px solid #ccc;">
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#2E8B7A;">Coins</td>
-        <td style="padding:10px; text-align:left;">Collect for points</td>
-      </tr>
-      <tr style="border-bottom:1px solid #ccc;">
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#2E8B7A;">Enemies</td>
-        <td style="padding:10px; text-align:left;">Jump on from above to defeat</td>
+        <td>JUMP</td>
+        <td>SPACE / ↑ / W</td>
       </tr>
       <tr>
-        <td style="padding:10px; text-align:left; font-weight:bold; color:#2E8B7A;">Flag</td>
-        <td style="padding:10px; text-align:left;">Reach to complete level</td>
+        <td>RESTART</td>
+        <td>R KEY</td>
+      </tr>
+      <tr>
+        <td>MUSHROOM</td>
+        <td>GROW BIG</td>
+      </tr>
+      <tr>
+        <td>COINS</td>
+        <td>+POINTS</td>
+      </tr>
+      <tr>
+        <td>ENEMIES</td>
+        <td>JUMP ON</td>
+      </tr>
+      <tr>
+        <td>FLAG</td>
+        <td>WIN!</td>
       </tr>
     </table>
-    <button onclick="document.getElementById('guideModal').style.display='none'" style="margin-top:20px; padding:10px 24px; background:#E8622C; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Close</button>
+    <button class="close-btn" onclick="hideGuide()">CLOSE</button>
   </div>
 </div>
 
 <script>
 function showGuide(){
-  document.getElementById('guideModal').style.display='flex';
+  document.getElementById('guideModal').classList.add('show');
+}
+function hideGuide(){
+  document.getElementById('guideModal').classList.remove('show');
 }
 window.addEventListener('click', function(e){
   const modal = document.getElementById('guideModal');
-  if(e.target === modal) modal.style.display='none';
+  if(e.target === modal) hideGuide();
+});
+document.addEventListener('keydown', function(e){
+  if(e.code === 'Escape') hideGuide();
 });
 </script>
 </body>
