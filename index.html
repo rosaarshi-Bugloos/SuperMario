@@ -248,8 +248,194 @@
   ctx.imageSmoothingEnabled = false;
 
   // ---- sprite atlas ------------------------------------------------
-  // Cropped from Kenney's "Pixel Platformer" pack (CC0 1.0, kenney.nl/assets/pixel-platformer).
-  var ATLAS_SRC = "data:image/png;base64,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";
+  // Generate NES Mario-style sprites procedurally
+  function generateMarioSprites(){
+    var c = document.createElement('canvas');
+    var ctx = c.getContext('2d');
+    c.width = 600;
+    c.height = 200;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    // ===== ENVIRONMENT TILES =====
+    // Grass/Ground cap (0,0)
+    ctx.fillStyle = '#00BB00';
+    ctx.fillRect(0, 0, 18, 9);
+    ctx.fillStyle = '#0077BB';
+    ctx.fillRect(0, 9, 18, 9);
+
+    // Grass fill (18,0)
+    ctx.fillStyle = '#0077BB';
+    ctx.fillRect(18, 0, 18, 18);
+
+    // Brown bricks (36-90, 0)
+    for (var b = 0; b < 4; b++){
+      var bx = 36 + b*18;
+      ctx.fillStyle = '#AA5500';
+      ctx.fillRect(bx, 0, 18, 18);
+      ctx.fillStyle = '#552200';
+      ctx.fillRect(bx+2, 2, 3, 14);
+      ctx.fillRect(bx+9, 2, 3, 14);
+      ctx.fillRect(bx+2, 8, 14, 2);
+      ctx.fillStyle = '#DDAA66';
+      ctx.fillRect(bx+1, 1, 14, 1);
+    }
+
+    // Question block (108,0)
+    ctx.fillStyle = '#FFCC00';
+    ctx.fillRect(108, 0, 18, 18);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(112, 5, 4, 8);
+    ctx.fillRect(114, 14, 2, 2);
+
+    // Bonus plain block (126,0)
+    ctx.fillStyle = '#999999';
+    ctx.fillRect(126, 0, 18, 18);
+    ctx.fillStyle = '#666666';
+    ctx.fillRect(127, 2, 16, 14);
+
+    // Red mushroom (144,0)
+    ctx.fillStyle = '#DD0000';
+    ctx.fillRect(144+2, 2, 14, 8);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(144+4, 3, 2, 2);
+    ctx.fillRect(144+10, 3, 2, 2);
+    ctx.fillStyle = '#FFAA66';
+    ctx.fillRect(144+2, 10, 14, 8);
+
+    // Gold coin (162,0)
+    ctx.fillStyle = '#FFCC00';
+    ctx.beginPath();
+    ctx.arc(171, 9, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFF00';
+    ctx.beginPath();
+    ctx.arc(171, 9, 4, 0, Math.PI*2);
+    ctx.fill();
+
+    // Pole shaft (180,0)
+    ctx.fillStyle = '#CCAA00';
+    ctx.fillRect(183, 2, 6, 14);
+    ctx.fillStyle = '#996600';
+    ctx.fillRect(183, 2, 2, 14);
+
+    // Flag (198,0)
+    ctx.fillStyle = '#CCAA00';
+    ctx.fillRect(203, 5, 5, 2);
+    ctx.fillStyle = '#DD0000';
+    ctx.fillRect(208, 3, 8, 12);
+
+    // ===== MARIO CHARACTER FRAMES (40x56 small, 50x70 big) =====
+    drawMarioFrame(ctx, 220, 0, 'stand', false);
+    drawMarioFrame(ctx, 265, 0, 'walk1', false);
+    drawMarioFrame(ctx, 310, 0, 'walk2', false);
+    drawMarioFrame(ctx, 355, 0, 'walk3', false);
+    drawMarioFrame(ctx, 400, 0, 'walk4', false);
+    drawMarioFrame(ctx, 445, 0, 'jump', false);
+    drawMarioFrame(ctx, 490, 0, 'fall', false);
+    drawMarioFrame(ctx, 535, 0, 'land', false);
+
+    drawMarioFrame(ctx, 220, 65, 'stand', true);
+    drawMarioFrame(ctx, 275, 65, 'walk1', true);
+    drawMarioFrame(ctx, 330, 65, 'walk2', true);
+    drawMarioFrame(ctx, 385, 65, 'walk3', true);
+    drawMarioFrame(ctx, 440, 65, 'walk4', true);
+    drawMarioFrame(ctx, 495, 65, 'jump', true);
+    drawMarioFrame(ctx, 550, 65, 'fall', true);
+    drawMarioFrame(ctx, 560, 65, 'land', true);
+
+    // ===== ENEMY SPRITE - Goomba (0,18) =====
+    ctx.fillStyle = '#8B6633';
+    ctx.fillRect(2, 20, 20, 12);
+    for (var gx = 0; gx < 24; gx++) {
+      var gy = Math.floor(2 + Math.sqrt(Math.max(0, 36 - (gx-12)*(gx-12)))/3);
+      ctx.fillStyle = '#8B6633';
+      ctx.fillRect(gx, gy, 1, 1);
+    }
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(6, 19, 3, 3);
+    ctx.fillRect(15, 19, 3, 3);
+    ctx.fillRect(4, 31, 2, 2);
+    ctx.fillRect(18, 31, 2, 2);
+
+    return c.toDataURL();
+  }
+
+  function drawMarioFrame(ctx, x, y, action, isBig){
+    var w = isBig ? 50 : 40;
+    var h = isBig ? 70 : 56;
+    var sz = w / 8;
+
+    ctx.fillStyle = '#1A3A5F';
+    ctx.fillRect(x, y, w, h);
+
+    var cx = x + w/2;
+    var cy = y + 5;
+
+    // Animation
+    var lOff = 0, rOff = 0;
+    if (action === 'walk1'){ lOff = sz*0.4; rOff = -sz*0.4; }
+    else if (action === 'walk3'){ lOff = -sz*0.4; rOff = sz*0.4; }
+    else if (action === 'jump'){ lOff = -sz*0.8; rOff = -sz*0.8; }
+    else if (action === 'fall'){ lOff = sz*0.4; rOff = sz*0.4; }
+    else if (action === 'land'){ lOff = sz*0.6; rOff = sz*0.6; }
+
+    // HAT (RED)
+    ctx.fillStyle = '#DD0000';
+    ctx.fillRect(cx-sz*1.8, cy, sz*3.6, sz*1.2);
+
+    // FACE (SKIN)
+    ctx.fillStyle = '#FFAA66';
+    ctx.fillRect(cx-sz*1.5, cy+sz*1.2, sz*3, sz*1.8);
+
+    // EYES
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(cx-sz*0.6, cy+sz*1.5, sz*0.3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx+sz*0.6, cy+sz*1.5, sz*0.3, 0, Math.PI*2);
+    ctx.fill();
+
+    // MUSTACHE
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(cx-sz*0.8, cy+sz*2, sz*1.6, sz*0.3);
+
+    // SHIRT (RED)
+    var bodyY = cy + sz*3;
+    ctx.fillStyle = '#DD0000';
+    ctx.fillRect(cx-sz*1.4, bodyY, sz*2.8, sz*2);
+
+    // BUTTONS (WHITE)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cx-sz*0.5, bodyY+sz*0.4, sz, sz*1.2);
+
+    // LEFT ARM
+    ctx.fillStyle = '#FFAA66';
+    ctx.fillRect(cx-sz*1.8+lOff, bodyY+sz*0.2, sz*0.6, sz*1.6);
+
+    // RIGHT ARM
+    ctx.fillStyle = '#FFAA66';
+    ctx.fillRect(cx+sz*1.2+rOff, bodyY+sz*0.2, sz*0.6, sz*1.6);
+
+    // GLOVES (WHITE)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cx-sz*1.8+lOff, bodyY+sz*1.6, sz*0.6, sz*0.4);
+    ctx.fillRect(cx+sz*1.2+rOff, bodyY+sz*1.6, sz*0.6, sz*0.4);
+
+    // PANTS (BLUE)
+    var legY = bodyY + sz*2;
+    ctx.fillStyle = '#0055DD';
+    ctx.fillRect(cx-sz*1.2, legY, sz*0.8, sz*1.6);
+    ctx.fillRect(cx+sz*0.4, legY, sz*0.8, sz*1.6);
+
+    // SHOES (BLACK)
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(cx-sz*1.2, legY+sz*1.4, sz*0.8, sz*0.4);
+    ctx.fillRect(cx+sz*0.4, legY+sz*1.4, sz*0.8, sz*0.4);
+  }
+
+  var ATLAS_SRC = generateMarioSprites();
   var atlas = new Image();
   var atlasReady = false;
   atlas.onload = function(){ atlasReady = true; };
@@ -270,9 +456,25 @@
     coin:        { x: 162, y: 0,  w: 18, h: 18 },
     poleShaft:   { x: 180, y: 0,  w: 18, h: 18 },
     flag:        { x: 198, y: 0,  w: 18, h: 18 },
-    playerSmall: { x: 0,   y: 18, w: 24, h: 24 },
-    playerBig:   { x: 24,  y: 18, w: 24, h: 24 },
-    enemy:       { x: 48,  y: 18, w: 24, h: 24 }
+    enemy:       { x: 0,   y: 18, w: 24, h: 24 },
+    // Mario small frames (40x56)
+    playerSmallIdle:  { x: 220, y: 0,  w: 40, h: 56 },
+    playerSmallWalk1: { x: 265, y: 0,  w: 40, h: 56 },
+    playerSmallWalk2: { x: 310, y: 0,  w: 40, h: 56 },
+    playerSmallWalk3: { x: 355, y: 0,  w: 40, h: 56 },
+    playerSmallWalk4: { x: 400, y: 0,  w: 40, h: 56 },
+    playerSmallJump:  { x: 445, y: 0,  w: 40, h: 56 },
+    playerSmallFall:  { x: 490, y: 0,  w: 40, h: 56 },
+    playerSmallLand:  { x: 535, y: 0,  w: 40, h: 56 },
+    // Mario big frames (50x70)
+    playerBigIdle:  { x: 220, y: 65, w: 50, h: 70 },
+    playerBigWalk1: { x: 275, y: 65, w: 50, h: 70 },
+    playerBigWalk2: { x: 330, y: 65, w: 50, h: 70 },
+    playerBigWalk3: { x: 385, y: 65, w: 50, h: 70 },
+    playerBigWalk4: { x: 440, y: 65, w: 50, h: 70 },
+    playerBigJump:  { x: 495, y: 65, w: 50, h: 70 },
+    playerBigFall:  { x: 550, y: 65, w: 50, h: 70 },
+    playerBigLand:  { x: 560, y: 65, w: 50, h: 70 }
   };
 
   function drawSprite(s, dx, dy, dw, dh, flip){
@@ -828,47 +1030,26 @@
     var flash = player.invuln > 0 && Math.floor(player.invuln / 6) % 2 === 0;
     if (flash) ctx.globalAlpha = 0.4;
 
-    var sprite = player.big ? SPR.playerBig : SPR.playerSmall;
-    var offsetY = 0, scaleX = 1, scaleY = 1, offsetX = 0;
+    // Select sprite frame based on animation state
+    var spriteKey;
+    var prefix = player.big ? 'playerBig' : 'playerSmall';
 
-    // Walk cycle animation - creates 4-frame bobbing pattern
     if (player.animState === 'walk'){
-      var frameOffsets = [2, -1, 0, -1];
-      offsetY = frameOffsets[player.walkFrame];
-    }
-    // Jump animation - upward squash then stretch
-    else if (player.animState === 'jump'){
-      var jumpPhase = Math.max(0, -player.vy / JUMP_V);
-      if (jumpPhase < 0.15){
-        scaleY = 0.85;
-        scaleX = 1.15;
-        offsetY = 3;
-      } else {
-        offsetY = -Math.sin(jumpPhase * Math.PI) * 6;
-      }
-    }
-    // Fall animation - slight stretch
-    else if (player.animState === 'fall'){
-      scaleY = 1.08;
-      scaleX = 0.95;
-      offsetY = 2;
-    }
-    // Landing animation - squash and bounce
-    if (player.landSquash > 0){
-      var squashAmount = (8 - player.landSquash) / 8;
-      scaleY = Math.max(0.75, 1 - squashAmount * 0.25);
-      scaleX = Math.min(1.25, 1 + squashAmount * 0.25);
-      offsetY += squashAmount * 2;
+      var walkFrames = ['Walk1', 'Walk2', 'Walk3', 'Walk4'];
+      spriteKey = prefix + walkFrames[player.walkFrame % 4];
+    } else if (player.animState === 'jump'){
+      spriteKey = prefix + 'Jump';
+    } else if (player.animState === 'fall'){
+      spriteKey = prefix + 'Fall';
+    } else if (player.landSquash > 0){
+      spriteKey = prefix + 'Land';
+    } else {
+      spriteKey = prefix + 'Idle';
     }
 
-    ctx.save();
-    ctx.translate(x + w / 2, y + h / 2);
-    if (player.facing < 0) ctx.scale(-scaleX, scaleY);
-    else ctx.scale(scaleX, scaleY);
-    ctx.translate(-(x + w / 2), -(y + h / 2));
-    drawSprite(sprite, x, y + offsetY, w, h, false);
-    ctx.restore();
+    var sprite = SPR[spriteKey] || (player.big ? SPR.playerBigIdle : SPR.playerSmallIdle);
 
+    drawSprite(sprite, x, y, w, h, player.facing < 0);
     ctx.globalAlpha = 1;
   }
 
