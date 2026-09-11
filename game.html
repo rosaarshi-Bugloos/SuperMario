@@ -286,12 +286,24 @@
     bonusIcon:   { x: 108, y: 0,  w: 18, h: 18 },
     bonusPlain:  { x: 126, y: 0,  w: 18, h: 18 },
     mushroom:    { x: 144, y: 0,  w: 18, h: 18 },
-    coin:        { x: 162, y: 0,  w: 18, h: 18 },
+    coin: [
+      { x: 162, y: 0, w: 18, h: 18 },
+      { x: 162, y: 0, w: 18, h: 18 }
+    ],
     poleShaft:   { x: 180, y: 0,  w: 18, h: 18 },
     flag:        { x: 198, y: 0,  w: 18, h: 18 },
-    playerSmall: { x: 0,   y: 18, w: 24, h: 24 },
-    playerBig:   { x: 24,  y: 18, w: 24, h: 24 },
-    enemy:       { x: 48,  y: 18, w: 24, h: 24 }
+    playerSmall: [
+      { x: 0,   y: 18, w: 24, h: 24 },
+      { x: 0,   y: 18, w: 24, h: 24 }
+    ],
+    playerBig: [
+      { x: 24,  y: 18, w: 24, h: 24 },
+      { x: 24,  y: 18, w: 24, h: 24 }
+    ],
+    enemy: [
+      { x: 48,  y: 18, w: 24, h: 24 },
+      { x: 48,  y: 18, w: 24, h: 24 }
+    ]
   };
 
   function drawSprite(s, dx, dy, dw, dh, flip){
@@ -440,6 +452,13 @@
       player.big = true;
       player.h = 56;
       player.y -= (player.h - oldH);
+      triggerScreenShake(2);
+      for(var i = 0; i < 10; i++){
+        var angle = (Math.PI * 2 * i) / 10;
+        var vx = Math.cos(angle) * 3;
+        var vy = Math.sin(angle) * 3 - 2;
+        addParticle(player.x + 15, player.y + 28, vx, vy, 25, '#FF1493', 4);
+      }
     }
     score += 50;
   }
@@ -457,13 +476,31 @@
     score += 10;
   }
 
+  function collectCoinWithEffect(x, y){
+    collectCoin();
+    triggerScreenShake(2);
+    for(var i = 0; i < 8; i++){
+      var angle = (Math.PI * 2 * i) / 8;
+      var vx = Math.cos(angle) * 3;
+      var vy = Math.sin(angle) * 3 - 2;
+      addParticle(x + 9, y + 9, vx, vy, 30, '#FFD700', 4);
+    }
+  }
+
   function bumpBlock(block){
     block.hit = true;
     block.bump = -8;
+    triggerScreenShake(1.5);
+    for(var i = 0; i < 6; i++){
+      var angle = (Math.PI * 2 * i) / 6;
+      var vx = Math.cos(angle) * 2;
+      var vy = Math.sin(angle) * 2 - 1;
+      addParticle(block.x + 16, block.y + 16, vx, vy, 20, '#DAA520', 3);
+    }
     if (block.item === 'mushroom'){
       mushrooms.push({ x: block.x + 3, y: block.y - 26, w: 26, h: 26, collected: false });
     } else {
-      collectCoin();
+      collectCoinWithEffect(block.x + 16, block.y + 16);
     }
   }
 
@@ -565,7 +602,7 @@
       if (c.collected) continue;
       if (rectsOverlap(player, c)){
         c.collected = true;
-        collectCoin();
+        collectCoinWithEffect(c.x, c.y);
       }
     }
   }
@@ -585,6 +622,13 @@
           e.alive = false;
           score += 100;
           player.vy = -9;
+          triggerScreenShake(3);
+          for(var j = 0; j < 12; j++){
+            var angle = (Math.PI * 2 * j) / 12;
+            var vx = Math.cos(angle) * 4;
+            var vy = Math.sin(angle) * 4 - 1;
+            addParticle(e.x + 12, e.y + 12, vx, vy, 40, '#FF6B6B', 5);
+          }
         } else if (player.invuln <= 0){
           if (player.big) shrinkPlayer();
           else { loseLife(); return; }
@@ -625,6 +669,7 @@
     updateMushrooms();
     updateCoins();
     updateBonusBlocks();
+    updateParticles();
 
     if (player.invuln > 0) player.invuln -= 1;
     if (player.vx !== 0) player.walk += 1;
@@ -751,11 +796,20 @@
   }
 
   function drawBonusBlocks(){
+    var t = performance.now() / 150;
     for (var i = 0; i < bonusBlocks.length; i++){
       var b = bonusBlocks[i];
       var x = b.x - camera.x, y = b.y + b.bump;
       if (x + b.w < 0 || x > CANVAS_W) continue;
-      drawSprite(b.hit ? SPR.bonusPlain : SPR.bonusIcon, x, y, b.w, b.h);
+
+      var pulse = b.hit ? 0 : Math.sin(t + i) * 0.5;
+      ctx.save();
+      ctx.translate(x + b.w/2, y + b.h/2);
+      ctx.scale(1 + pulse * 0.1, 1 + pulse * 0.1);
+      ctx.shadowColor = b.hit ? 'rgba(200,200,200,0.3)' : 'rgba(255,215,0,0.5)';
+      ctx.shadowBlur = 6;
+      drawSprite(b.hit ? SPR.bonusPlain : SPR.bonusIcon, -b.w/2, -b.h/2, b.w, b.h);
+      ctx.restore();
     }
   }
 
@@ -767,32 +821,51 @@
       var x = c.x - camera.x;
       if (x + c.w < 0 || x > CANVAS_W) continue;
       var scaleX = Math.cos(t + c.x * 0.02);
-      var cx = x + c.w/2, cy = c.y + c.h/2;
+      var bobY = Math.sin(t * 2 + c.x * 0.05) * 3;
+      var cx = x + c.w/2, cy = c.y + c.h/2 + bobY;
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(Math.max(0.15, Math.abs(scaleX)), 1);
-      drawSprite(SPR.coin, -c.w/2, -c.h/2, c.w, c.h);
+      ctx.shadowColor = 'rgba(255,215,0,0.6)';
+      ctx.shadowBlur = 8;
+      drawSprite(SPR.coin[0], -c.w/2, -c.h/2, c.w, c.h);
       ctx.restore();
     }
   }
 
   function drawMushrooms(){
+    var t = performance.now() / 200;
     for (var i = 0; i < mushrooms.length; i++){
       var m = mushrooms[i];
       if (m.collected) continue;
       var x = m.x - camera.x;
       if (x + m.w < 0 || x > CANVAS_W) continue;
-      drawSprite(SPR.mushroom, x, m.y, m.w, m.h);
+      var bobY = Math.sin(t + i * 0.5) * 2;
+      ctx.save();
+      ctx.translate(x + m.w/2, m.y + m.h/2 + bobY);
+      ctx.shadowColor = 'rgba(255,105,180,0.5)';
+      ctx.shadowBlur = 8;
+      drawSprite(SPR.mushroom, -m.w/2, -m.h/2, m.w, m.h);
+      ctx.restore();
     }
   }
 
   function drawEnemies(){
+    var t = performance.now() / 100;
     for (var i = 0; i < enemies.length; i++){
       var e = enemies[i];
       if (!e.alive) continue;
       var x = e.x - camera.x;
       if (x + e.w < 0 || x > CANVAS_W) continue;
-      drawSprite(SPR.enemy, x - 2, e.y - 2, e.w + 4, e.h + 4, e.dir < 0);
+
+      var bobY = Math.sin(t + i) * 2;
+      ctx.save();
+      ctx.translate(x + e.w/2, e.y - 2 + e.h/2 + bobY);
+      ctx.scale(e.dir < 0 ? -1 : 1, 1);
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 6;
+      drawSprite(SPR.enemy[0], -e.w/2 - 2, -e.h/2 - 2, e.w + 4, e.h + 4, false);
+      ctx.restore();
     }
   }
 
@@ -800,10 +873,22 @@
     var x = FLAG_X - camera.x;
     if (x < -40 || x > CANVAS_W + 40) return;
     var poleTop = 140, TS = 18;
+
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    ctx.shadowBlur = 4;
+
     for (var py = 0; poleTop + py < GROUND_TOP; py += TS){
       drawSprite(SPR.poleShaft, x + 4, poleTop + py, TS, TS);
     }
-    drawSprite(SPR.flag, x - 6, poleTop - 2, 18, 18);
+
+    var t = performance.now() / 100;
+    var wave = Math.sin(t) * 2;
+    ctx.save();
+    ctx.translate(x, poleTop - 2);
+    ctx.shadowColor = 'rgba(255,0,0,0.4)';
+    ctx.shadowBlur = 8;
+    drawSprite(SPR.flag, -6 + wave, 0, 18, 18);
+    ctx.restore();
   }
 
   function drawPlayer(){
@@ -812,10 +897,55 @@
     if (flash) ctx.globalAlpha = 0.4;
 
     var bob = (player.onGround && player.vx !== 0) ? Math.sin(player.walk * 0.35) * 2 : 0;
-    var sprite = player.big ? SPR.playerBig : SPR.playerSmall;
-    drawSprite(sprite, x, y + bob, w, h, player.facing < 0);
+    var jumpSquash = 1;
+    if (!player.onGround){
+      if (player.vy < -5) jumpSquash = 1.1;
+      else if (player.vy > 5) jumpSquash = 0.9;
+    }
+
+    var sprite = player.big ? SPR.playerBig[0] : SPR.playerSmall[0];
+    ctx.save();
+    ctx.translate(x + w/2, y + h/2 + bob);
+    ctx.scale(player.facing, jumpSquash);
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 4;
+    drawSprite(sprite, -w/2, -h/2, w, h, false);
+    ctx.restore();
 
     ctx.globalAlpha = 1;
+  }
+
+  // ---- visual effects -----------------------------------------------
+  var particles = [];
+  function addParticle(x, y, vx, vy, life, color, size){
+    particles.push({ x: x, y: y, vx: vx, vy: vy, life: life, maxLife: life, color: color, size: size });
+  }
+
+  function updateParticles(){
+    for(var i = particles.length - 1; i >= 0; i--){
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.3;
+      p.life -= 1;
+      if(p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function drawParticles(){
+    for(var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      var alpha = p.life / p.maxLife;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  var screenShake = 0;
+  function triggerScreenShake(intensity){
+    screenShake = Math.max(screenShake, intensity);
   }
 
   function draw(){
@@ -831,6 +961,17 @@
     drawFlag();
     drawEnemies();
     drawPlayer();
+    drawParticles();
+
+    // Screen shake effect
+    if(screenShake > 0){
+      ctx.save();
+      var shake = Math.random() * screenShake * 2 - screenShake;
+      ctx.translate(shake, 0);
+      screenShake *= 0.85;
+    } else {
+      ctx.restore();
+    }
   }
 
   // ---- main loop -------------------------------------------------------
